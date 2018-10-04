@@ -1,0 +1,17 @@
+{
+	"global_ruleset": {
+		"rules": [
+			{
+				"name": "TRT computation on data acquisition",
+				"on": {
+					"done": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$"
+				},
+				"todo": {
+					"task": "trt/${process_id}/${product_id}",
+					"queue": "trt/${process_id}/todo",
+					"set": "${process_id}/todo"
+				}
+			}
+		]
+	}
+}
