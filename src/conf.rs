@@ -109,7 +109,8 @@ impl JConv for Value {
 }
 
 pub fn read_file(filename: &str) -> RescResult<Conf> {
-    let data = fs::read_to_string(filename).expect("Failed to read file");
+    let data = fs::read_to_string(filename)
+        .expect(&*format!("Failed to read config file {}", &filename));
     let root: Value = serde_json::from_str(&data)?;
     root.as_conf()
 }
