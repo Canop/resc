@@ -9,7 +9,7 @@
 				"todo": {
 					"task": "trt/${process_id}/${product_id}",
 					"queue": "trt/${process_id}/todo",
-					"set": "${process_id}/todo"
+					"set": "${product_id}/todo"
 				}
 			}
 		]
