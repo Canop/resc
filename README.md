@@ -50,7 +50,7 @@ or (during development)
 
 Resc starts a watcher, a thread, over the specified `input_queue`.
 
-When a new event (a string in the `global/done` list) appears, it's atomically moved (using BRPOPLPUSH) to the `taken/global` list and rules are interpreted.
+When a new event (a string in the `global/done` list) appears, it's atomically moved (using [BRPOPLPUSH](https://redis.io/commands/brpoplpush)) to the `taken/global` list and watcher's rules are executed.
 
 Assuming the coming task is `"acq/123/456"`, then the first (and unique) rule of our example will match, according to the regular expression in `"on"/"done"`.
 
@@ -65,7 +65,7 @@ The taks `"trt/123/456"` would then be created and pushed to the `"trt/123/todo"
 
 The task is also referenced in this sorted set with the timestamp as score.
 
-After having executed all rules on this task, it's cleared from the `"global/taken"` queue.
+After having executed all rules on this task, it's cleared from the `"global/taken"` queue and the watcher goes on watching the `"global/done"` queue again for other tasks.
 
 # Development Status
 
