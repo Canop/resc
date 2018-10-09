@@ -3,13 +3,14 @@
 /// and building the Conf object.
 
 use std::fs;
-use serde_json;
-use serde_json::{Value};
+use serde_json::{self, Value};
 use regex::Regex;
 
 use rules::{Rule, Ruleset};
 use errors::{RescResult};
 use watchers::{Watcher};
+use fetchers::{Fetcher};
+use patterns::{Pattern};
 
 #[derive(Debug)]
 pub struct Conf {
@@ -20,6 +21,7 @@ pub struct Conf {
 trait JConv {
     fn get_string(&self, c: &str) -> RescResult<String>;
     fn get_l2_string(&self, c1: &str, c2: &str) -> RescResult<String>;
+    fn as_fetcher(&self) -> RescResult<Fetcher>;
     fn as_rule(&self) -> RescResult<Rule>;
     fn as_watcher(&self) -> RescResult<Watcher>;
     fn as_conf(&self) -> RescResult<Conf>;
@@ -41,6 +43,15 @@ impl JConv for Value {
         }
     }
 
+    fn as_fetcher(&self) -> RescResult<Fetcher> {
+        let url_pattern = self.get_string("url")?;
+        let returns = self.get_string("returns")?;
+        Ok(Fetcher {
+            url: Pattern{ src: url_pattern},
+            returns
+        })
+    }
+
     fn as_rule(&self) -> RescResult<Rule> {
             let name = match &self["name"] {
                 Value::String(v) => v.to_owned(),
@@ -53,16 +64,25 @@ impl JConv for Value {
                 Err(_) => return Err("invalid on/done pattern".into()),
             };
 
-            let todo_task_pattern = self.get_l2_string("todo", "task")?;
-            let todo_queue_pattern = self.get_l2_string("todo", "queue")?;
-            let todo_set_pattern = self.get_l2_string("todo", "set")?;
+            let mut fetchers = Vec::new();
+            if let Value::Array(fetchers_value) = &self["fetch"] {
+                for fetcher_value in fetchers_value.iter() {
+                    let fetcher = fetcher_value.as_fetcher()?;
+                    fetchers.push(fetcher);
+                }
+            }
+
+            let todo_task = Pattern { src: self.get_l2_string("todo", "task")? };
+            let todo_queue = Pattern { src: self.get_l2_string("todo", "queue")? };
+            let todo_set = Pattern { src: self.get_l2_string("todo", "set")? };
 
             Ok(Rule{
                 name,
                 on_regex,
-                todo_task_pattern,
-                todo_queue_pattern,
-                todo_set_pattern,
+                fetchers,
+                todo_task,
+                todo_queue,
+                todo_set,
             })
     }
 

@@ -21,24 +21,27 @@ impl Watcher {
         while let Ok(done) = con.brpoplpush::<_, String>(&self.input_queue, &self.taken_queue, 0) {
             let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
             let now = now as f64; // fine with a timestamp in seconds because < 2^51
-            println!("got task: {:?} @ {}", &done, now);
+            println!("<- task {:?} in queue {:?} @ {}", &done, &self.input_queue, now);
             let matching_rules = self.ruleset.matching_rules(&done);
             println!(" {} matching rule(s)", matching_rules.len());
             for r in &matching_rules {
-                println!("  applying rule '{:?}'", r.name);
-                let results = r.results(&done);
-                for r in &results {
-                    println!("  -> generated task: {:?} for queue {:?}", &r.task, &r.queue);
-                    println!("     checking task set {:?}", &r.set);
-                    if let Ok(time) = con.zscore::<_, _, i32>(&r.set, &r.task) {
-                        println!("     -> already queued @ {}", time);
-                        continue;
+                println!(" applying rule '{:?}'", r.name);
+                match r.results(&done) {
+                    Ok(results) => {
+                        for r in &results {
+                            if let Ok(time) = con.zscore::<_, _, i32>(&r.set, &r.task) {
+                                println!("  task {:?} already queued @ {}", &r.task, time);
+                                continue;
+                            }
+                            con.lpush::<_, _, i32>(&r.queue, &r.task)?;
+                            con.zadd::<_, f64, _, i32>(&r.set, &r.task, now)?;
+                            println!("  ->  {:?} pushed to queue {:?} and set {:?}", &r.task, &r.queue, &r.set);
+
+                        }
+                    },
+                    Err(err) => {
+                        println!("  Rule execution crashed: {:?}", err)
                     }
-                    println!("     -> not in set");
-                    con.lpush::<_, _, i32>(&r.queue, &r.task)?;
-                    println!("     task {:?} added to queue {:?}", &r.task, &r.queue);
-                    con.zadd::<_, f64, _, i32>(&r.set, &r.task, now)?;
-                    println!("     task {:?} added to set {:?}", &r.task, &r.set);
                 }
             }
             con.lrem(&self.taken_queue, 1, &done)?;

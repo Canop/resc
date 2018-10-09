@@ -11,9 +11,13 @@ It achieves this in a safe and monitorable way and takes care, for example, of a
 
 Resc is written in rust for safety and performance.
 
-# Example
+# Examples
 
-Here's a simple configuration file (present in this repository as demo/demo.conf.json):
+This examples can be found in this repository as `demo/demo.conf.json`.
+
+## Example 1 : regex based task generation
+
+Here's a simple configuration file:
 
 	{
 		"watchers": [
@@ -67,8 +71,54 @@ The task is also referenced in this sorted set with the timestamp as score.
 
 After having executed all rules on this task, it's cleared from the `"global/taken"` queue and the watcher goes on watching the `"global/done"` queue again for other tasks.
 
+## Example 2 : Fetching some data to compute new tasks
+
+Sometimes it might be necessary to query a web service to determine what tasks must be done.
+
+Let's say there is a REST service returning the elements which would be logically impacted when some other one change (for example a change in a customer command might involve the recomputing of some product validity for that command).
+
+If there's certain event on product 5ab7342600000040, you want to query
+
+     http://my-web-service/products/5ab7342600000040/direct-childs
+
+which responds in JSON with the list of products which should be recomputed:
+
+	[
+		{"processId":634876914,"productId":"5ab7e7dc00000040"},
+		{"processId":634876914,"productId":"5ab7ebe800000040"}
+	]
+
+and for each of those products you want to generate a new task.
+
+Then the relevant rule could be like this:
+
+	{
+		"name": "TRT propagation to childs",
+		"on": {
+			"done": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$"
+		},
+		"fetch": [{
+			"url": "http://my-web-service/products/${product_id}/direct-childs",
+			"returns": "child"
+		}],
+		"todo": {
+			"task": "trt/${child.processId}/${child.productId}",
+			"queue": "trt/${child.processId}/todo",
+			"set": "${child.productId}/todo"
+		}
+	}
+
+The `fetch` element describes the HTTP query and the namespace of the variables read in the web-service's response and used for generation of tasks, queues and sets.
+
+In our example, we'd end with two new tasks, `"trt/634876914/5ab7e7dc00000040"` (added to queue `"trt/634876914/todo"`), and `"trt/634876914/5ab7ebe800000040"` (added to queue `"trt/634876914/todo"`).
+
+
 # Development Status
 
 This is a very preliminary version, without any kind of guarantee.
 
-It's still a Work In Progress and presented here for peer review.
+It's still a Work In Progress and presented here for easier peer review.
+
+# License
+
+*To be defined*
