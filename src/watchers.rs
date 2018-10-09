@@ -38,7 +38,7 @@ impl Watcher {
                     con.lpush::<_, _, i32>(&r.queue, &r.task)?;
                     println!("     task {:?} added to queue {:?}", &r.task, &r.queue);
                     con.zadd::<_, f64, _, i32>(&r.set, &r.task, now)?;
-                    println!("     task {:?} added to set {:?}", &r.task, &r.queue);
+                    println!("     task {:?} added to set {:?}", &r.task, &r.set);
                 }
             }
             con.lrem(&self.taken_queue, 1, &done)?;
