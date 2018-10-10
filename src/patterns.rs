@@ -6,8 +6,7 @@ use std::collections::HashMap;
 
 
 // optm: locations of groups in output patterns could be computed
-//       when initializing and we wouldn't need the name
-//       of the group, only their index
+//       when initializing
 #[derive(Debug)]
 pub struct Pattern {
     pub src: String,

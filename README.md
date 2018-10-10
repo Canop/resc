@@ -112,6 +112,7 @@ The `fetch` element describes the HTTP query and the namespace of the variables 
 
 In our example, we'd end with two new tasks, `"trt/634876914/5ab7e7dc00000040"` (added to queue `"trt/634876914/todo"`), and `"trt/634876914/5ab7ebe800000040"` (added to queue `"trt/634876914/todo"`).
 
+A possible variant of this rule would be to pass the task to another queue, for another watcher will be doing the fetching, thus ensuring a slow web service doesn't block the main event queue (as every watcher is on its own thread).
 
 # Development Status
 

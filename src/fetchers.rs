@@ -50,7 +50,6 @@ impl Fetcher {
             },
             _ => Err("unexpected json value type".into()),
         }
-
     }
 
     pub fn results(&self, props: &HashMap<String, String>) -> RescResult<Vec<FetchResult>> {

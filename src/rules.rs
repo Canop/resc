@@ -34,8 +34,6 @@ impl Rule {
         }
     }
     // Assumes the rule matches.
-    // (there will be more than one result in the future (for example due to genealogy))
-    // This could be heavily optimized by analyzing everything when reading the config.
     pub fn results(&self, task: &String) -> RescResult<Vec<RuleResult>> {
         let mut props: HashMap<String, String> = HashMap::new();
         let caps = self.on_regex.captures(task).unwrap();
