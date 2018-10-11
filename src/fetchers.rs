@@ -1,16 +1,15 @@
+use errors::RescResult;
+use patterns::Pattern;
+use reqwest;
+use serde_json::{self, Value};
 /// A Fetcher is responsible for synchronously fetching some data
 /// (for use in handling a rule)
-
 use std::collections::HashMap;
 use std::io::Read;
-use serde_json::{self, Value};
-use patterns::Pattern;
-use errors::{RescResult};
-use reqwest;
 
 #[derive(Debug)]
 pub struct FetchResult {
-    pub props: HashMap<String, String>
+    pub props: HashMap<String, String>,
 }
 
 // will probably be an enum later, with various other
@@ -22,32 +21,29 @@ pub struct Fetcher {
 }
 
 impl Fetcher {
-
     fn get_key(&self, key: &String) -> String {
         format!("{}.{}", self.returns, key)
     }
 
     fn get_fetch_result(&self, value: &Value) -> RescResult<FetchResult> {
         match value {
-           Value::Object(object_value) => {
+            Value::Object(object_value) => {
                 let mut props = HashMap::new();
                 for (key, value) in object_value.iter() {
                     match value {
                         Value::String(string_value) => {
                             props.insert(self.get_key(key), string_value.to_owned());
-                        },
+                        }
                         Value::Number(number_value) => {
                             props.insert(self.get_key(key), number_value.to_string());
-                        },
+                        }
                         _ => {
                             println!(" ignoring property {:#?}={:#?}", key, value);
                         }
                     }
                 }
-                Ok(FetchResult {
-                    props
-                })
-            },
+                Ok(FetchResult { props })
+            }
             _ => Err("unexpected json value type".into()),
         }
     }
@@ -68,11 +64,9 @@ impl Fetcher {
                 for returned_value in &returned_values {
                     results.push(self.get_fetch_result(returned_value)?);
                 }
-            },
+            }
             _ => return Err("unexpected content".into()),
-
         }
         Ok(results)
     }
 }
-

@@ -1,9 +1,8 @@
-use regex::{Regex};
+use errors::RescResult;
+use fetchers::Fetcher;
+use patterns::Pattern;
+use regex::Regex;
 use std::collections::HashMap;
-use fetchers::{Fetcher};
-use patterns::{Pattern};
-use errors::{RescResult};
-
 
 #[derive(Debug)]
 pub struct RuleResult {
@@ -27,7 +26,7 @@ impl Rule {
         self.on_regex.is_match(task)
     }
     fn result(&self, props: &HashMap<String, String>) -> RuleResult {
-        RuleResult{
+        RuleResult {
             task: self.make_task.inject(&props),
             queue: self.make_queue.inject(&props),
             set: self.make_set.inject(&props),
@@ -46,7 +45,7 @@ impl Rule {
                 }
             }
         }
-        if self.fetchers.len()>0 {
+        if self.fetchers.len() > 0 {
             // if there are fetchers, we'll fetch all the possible results
             // and generate a ruleresult per fetchresult
             for fetcher in &self.fetchers {
@@ -55,7 +54,8 @@ impl Rule {
                 for mut fetch_result in fetch_results {
                     // we inject the parent properties
                     // This is heavy but makes the whole simpler
-                    for (key, value) in props.iter() { // is there a shortcut ?
+                    for (key, value) in props.iter() {
+                        // is there a shortcut ?
                         fetch_result.props.insert(key.clone(), value.clone());
                     }
                     //println!(" merged: {:#?}", &fetch_result.props);
@@ -76,10 +76,6 @@ pub struct Ruleset {
 
 impl Ruleset {
     pub fn matching_rules(&self, task: &String) -> Vec<&Rule> {
-        self.rules
-            .iter()
-            .filter(|r| r.is_match(&task))
-            .collect()
+        self.rules.iter().filter(|r| r.is_match(&task)).collect()
     }
 }
-

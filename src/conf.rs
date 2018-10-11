@@ -1,16 +1,15 @@
+use regex::Regex;
+use serde_json::{self, Value};
 /// handle reading and parsing a JSON configuration file
 /// checking the consistency
 /// and building the Conf object.
-
 use std::fs;
-use serde_json::{self, Value};
-use regex::Regex;
 
+use errors::RescResult;
+use fetchers::Fetcher;
+use patterns::Pattern;
 use rules::{Rule, Ruleset};
-use errors::{RescResult};
-use watchers::{Watcher};
-use fetchers::{Fetcher};
-use patterns::{Pattern};
+use watchers::Watcher;
 
 #[derive(Debug)]
 pub struct Conf {
@@ -28,7 +27,6 @@ trait JConv {
 }
 
 impl JConv for Value {
-
     fn get_string(&self, c: &str) -> RescResult<String> {
         match &self[c] {
             Value::String(v) => Ok(v.to_owned()),
@@ -47,54 +45,60 @@ impl JConv for Value {
         let url_pattern = self.get_string("url")?;
         let returns = self.get_string("returns")?;
         Ok(Fetcher {
-            url: Pattern{ src: url_pattern},
-            returns
+            url: Pattern { src: url_pattern },
+            returns,
         })
     }
 
     fn as_rule(&self) -> RescResult<Rule> {
-            let name = match &self["name"] {
-                Value::String(v) => v.to_owned(),
-                _ => "<anonymous rule>".to_owned(),
-            };
+        let name = match &self["name"] {
+            Value::String(v) => v.to_owned(),
+            _ => "<anonymous rule>".to_owned(),
+        };
 
-            let on_pattern = self.get_string("on")?;
-            let on_regex = match Regex::new(&on_pattern) {
-                Ok(r) => r,
-                Err(_) => return Err("invalid on/done pattern".into()),
-            };
+        let on_pattern = self.get_string("on")?;
+        let on_regex = match Regex::new(&on_pattern) {
+            Ok(r) => r,
+            Err(_) => return Err("invalid on/done pattern".into()),
+        };
 
-            let mut fetchers = Vec::new();
-            if let Value::Array(fetchers_value) = &self["fetch"] {
-                for fetcher_value in fetchers_value.iter() {
-                    let fetcher = fetcher_value.as_fetcher()?;
-                    fetchers.push(fetcher);
-                }
+        let mut fetchers = Vec::new();
+        if let Value::Array(fetchers_value) = &self["fetch"] {
+            for fetcher_value in fetchers_value.iter() {
+                let fetcher = fetcher_value.as_fetcher()?;
+                fetchers.push(fetcher);
             }
+        }
 
-            let make_task = Pattern { src: match &self["make"]["task"] {
+        let make_task = Pattern {
+            src: match &self["make"]["task"] {
                 Value::String(src) => src.to_owned(),
                 _ => "${input_task}".to_owned(),
-            }};
+            },
+        };
 
-            let make_queue = match &self["make"]["queue"] {
-                Value::String(src) => Pattern{src: src.to_owned()},
-                _ => return Err("missing make/queue string in rule".into()),
-            };
+        let make_queue = match &self["make"]["queue"] {
+            Value::String(src) => Pattern {
+                src: src.to_owned(),
+            },
+            _ => return Err("missing make/queue string in rule".into()),
+        };
 
-            let make_set = Pattern { src: match &self["make"]["set"] {
+        let make_set = Pattern {
+            src: match &self["make"]["set"] {
                 Value::String(s) => s.to_owned(),
                 _ => format!("{}/set", &make_queue.src).to_owned(),
-            }};
+            },
+        };
 
-            Ok(Rule{
-                name,
-                on_regex,
-                fetchers,
-                make_task,
-                make_queue,
-                make_set,
-            })
+        Ok(Rule {
+            name,
+            on_regex,
+            fetchers,
+            make_task,
+            make_queue,
+            make_set,
+        })
     }
 
     fn as_watcher(&self, redis_url: String) -> RescResult<Watcher> {
@@ -103,9 +107,7 @@ impl JConv for Value {
             Value::String(s) => s.to_owned(),
             _ => format!("{}/taken", &input_queue).to_owned(),
         };
-        let mut ruleset = Ruleset {
-            rules: Vec::new()
-        };
+        let mut ruleset = Ruleset { rules: Vec::new() };
         let rules_value = match &self["rules"] {
             Value::Array(v) => v,
             _ => return Err("no global_ruleset/rules array".into()),
@@ -114,7 +116,7 @@ impl JConv for Value {
             let rule = rule_value.as_rule()?;
             ruleset.rules.push(rule);
         }
-        Ok(Watcher{
+        Ok(Watcher {
             redis_url,
             input_queue,
             taken_queue,
@@ -136,15 +138,13 @@ impl JConv for Value {
             watchers.push(watcher);
         }
 
-        Ok(Conf {
-            watchers
-        })
+        Ok(Conf { watchers })
     }
 }
 
 pub fn read_file(filename: &str) -> RescResult<Conf> {
-    let data = fs::read_to_string(filename)
-        .expect(&*format!("Failed to read config file {}", &filename));
+    let data =
+        fs::read_to_string(filename).expect(&*format!("Failed to read config file {}", &filename));
     let root: Value = serde_json::from_str(&data)?;
     root.as_conf()
 }
