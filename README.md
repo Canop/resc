@@ -112,7 +112,76 @@ The `fetch` element describes the HTTP query and the namespace of the variables 
 
 In our example, we'd end with two new tasks, `"trt/634876914/5ab7e7dc00000040"` (added to queue `"trt/634876914/todo"`), and `"trt/634876914/5ab7ebe800000040"` (added to queue `"trt/634876914/todo"`).
 
-A possible variant of this rule would be to pass the task to another queue, for another watcher will be doing the fetching, thus ensuring a slow web service doesn't block the main event queue (as every watcher is on its own thread).
+## Switching queues, default configuration values
+
+When you have several rules and one of them involves querying a remote service as in our example, you don't want all the rules to suffer from a possible slow-down of this remote service.
+
+That's when you may want to have another watcher, and thread, handling those specific task generations.
+In order to do that, you want a rule just passing the task to another queue which another watcher watches.
+
+Let's call this new queue `global/to-propagate`. Of course you give your queues the names you want.
+
+The new configuration becomes
+
+	{
+		"redis": {
+			"url": "redis://127.0.0.1/"
+		},
+		"watchers": [
+			{
+				"input_queue": "global/done",
+				"taken_queue": "global/taken",
+				"rules": [
+					{
+						"name": "TRT computation on data acquisition",
+						"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
+						"make": {
+							"task": "trt/${process_id}/${product_id}",
+							"queue": "trt/${process_id}/todo",
+							"set": "${product_id}/todo"
+						}
+					},
+					{
+						"name": "TRT propagation to childs : switch queue",
+						"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
+						"make": {
+							"queue": "global/to-propagate"
+						}
+					}
+				]
+			},
+			{
+				"input_queue": "global/to-propagate",
+				"rules": [
+					{
+						"name": "TRT propagation to childs : make child tasks",
+						"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
+						"fetch": [{
+							"url": "http://my-web-service/products/${product_id}/direct-childs",
+							"returns": "child"
+						}],
+						"make": {
+							"task": "trt/${child.processId}/${child.productId}",
+							"queue": "trt/${child.processId}/todo",
+							"set": "${child.productId}/todo"
+						}
+					}
+				]
+			}
+		]
+	}
+
+This way no remote service can slow down the global queue managment.
+
+You may have noticed the configuration is a little lighter than what could have been expected.
+
+Some settings are optional.
+
+When omitted, `taken_queue` is simply `input_queue` with `/taken` added. So here the second watcher would use as temporary queue `global/to-propagate/taken`.
+
+When `make/task` is omitted, the generated task is the same string as the input task. More precisely, the default value of `make/task` is `"${input_task}"`, `${input_task}` being a variable you can use in your task/queue/set generation.
+
+When omitted, `make/set` is `make/queue` with `/set` added.
 
 # Development Status
 
