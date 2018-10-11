@@ -1,9 +1,9 @@
 {
+	"redis": {
+		"url": "redis://127.0.0.1/"
+	},
 	"watchers": [
 		{
-			"redis": {
-				"url": "redis://127.0.0.1/"
-			},
 			"input_queue": "global/done",
 			"taken_queue": "global/taken",
 			"rules": [
@@ -26,9 +26,6 @@
 			]
 		},
 		{
-			"redis": {
-				"url": "redis://127.0.0.1/"
-			},
 			"input_queue": "global/to-propagate",
 			"rules": [
 				{

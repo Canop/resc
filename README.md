@@ -11,20 +11,20 @@ It achieves this in a safe and monitorable way and takes care, for example, of a
 
 Resc is written in rust for safety and performance.
 
-# Examples
+# Introductory Example
 
-This examples can be found in this repository as `demo/demo.conf.json`.
+This example can be found in this repository as `demo/demo.conf.json`.
 
-## Example 1 : regex based task generation
+## Simple regex based task generation
 
 Here's a simple configuration file:
 
 	{
+		"redis": {
+			"url": "redis://127.0.0.1/"
+		},
 		"watchers": [
 			{
-				"redis": {
-					"url": "redis://127.0.0.1/"
-				},
 				"input_queue": "global/done",
 				"taken_queue": "global/taken",
 				"rules": [
@@ -71,7 +71,7 @@ The task is also referenced in this sorted set with the timestamp as score.
 
 After having executed all rules on this task, it's cleared from the `"global/taken"` queue and the watcher goes on watching the `"global/done"` queue again for other tasks.
 
-## Example 2 : Fetching some data to compute new tasks
+## Fetching some data to compute new tasks
 
 Sometimes it might be necessary to query a web service to compute the tasks to generate in response to an event.
 

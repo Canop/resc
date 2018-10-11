@@ -23,7 +23,7 @@ trait JConv {
     fn get_l2_string(&self, c1: &str, c2: &str) -> RescResult<String>;
     fn as_fetcher(&self) -> RescResult<Fetcher>;
     fn as_rule(&self) -> RescResult<Rule>;
-    fn as_watcher(&self) -> RescResult<Watcher>;
+    fn as_watcher(&self, redis_url: String) -> RescResult<Watcher>;
     fn as_conf(&self) -> RescResult<Conf>;
 }
 
@@ -97,8 +97,7 @@ impl JConv for Value {
             })
     }
 
-    fn as_watcher(&self) -> RescResult<Watcher> {
-        let redis_url = self.get_l2_string("redis", "url")?;
+    fn as_watcher(&self, redis_url: String) -> RescResult<Watcher> {
         let input_queue = self.get_string("input_queue")?;
         let taken_queue = match &self["taken_queue"] {
             Value::String(s) => s.to_owned(),
@@ -124,6 +123,7 @@ impl JConv for Value {
     }
 
     fn as_conf(&self) -> RescResult<Conf> {
+        let redis_url = self.get_l2_string("redis", "url")?;
         let mut watchers = Vec::new();
 
         let watchers_value = match &self["watchers"] {
@@ -132,7 +132,7 @@ impl JConv for Value {
         };
 
         for watcher_value in watchers_value.iter() {
-            let watcher = watcher_value.as_watcher()?;
+            let watcher = watcher_value.as_watcher(redis_url.to_owned())?;
             watchers.push(watcher);
         }
 
