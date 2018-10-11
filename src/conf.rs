@@ -72,9 +72,20 @@ impl JConv for Value {
                 }
             }
 
-            let make_task = Pattern { src: self.get_l2_string("make", "task")? };
-            let make_queue = Pattern { src: self.get_l2_string("make", "queue")? };
-            let make_set = Pattern { src: self.get_l2_string("make", "set")? };
+            let make_task = Pattern { src: match &self["make"]["task"] {
+                Value::String(src) => src.to_owned(),
+                _ => "${input_task}".to_owned(),
+            }};
+
+            let make_queue = match &self["make"]["queue"] {
+                Value::String(src) => Pattern{src: src.to_owned()},
+                _ => return Err("missing make/queue string in rule".into()),
+            };
+
+            let make_set = Pattern { src: match &self["make"]["set"] {
+                Value::String(s) => s.to_owned(),
+                _ => format!("{}/set", &make_queue.src).to_owned(),
+            }};
 
             Ok(Rule{
                 name,
@@ -89,7 +100,10 @@ impl JConv for Value {
     fn as_watcher(&self) -> RescResult<Watcher> {
         let redis_url = self.get_l2_string("redis", "url")?;
         let input_queue = self.get_string("input_queue")?;
-        let taken_queue = self.get_string("taken_queue")?;
+        let taken_queue = match &self["taken_queue"] {
+            Value::String(s) => s.to_owned(),
+            _ => format!("{}/taken", &input_queue).to_owned(),
+        };
         let mut ruleset = Ruleset {
             rules: Vec::new()
         };
