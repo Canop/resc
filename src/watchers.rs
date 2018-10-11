@@ -25,7 +25,7 @@ impl Watcher {
             let matching_rules = self.ruleset.matching_rules(&done);
             println!(" {} matching rule(s)", matching_rules.len());
             for r in &matching_rules {
-                println!(" applying rule '{:?}'", r.name);
+                println!(" applying rule {:?}", r.name);
                 match r.results(&done) {
                     Ok(results) => {
                         for r in &results {
@@ -33,10 +33,9 @@ impl Watcher {
                                 println!("  task {:?} already queued @ {}", &r.task, time);
                                 continue;
                             }
+                            println!("  ->  {:?} pushed to queue {:?} and set {:?}", &r.task, &r.queue, &r.set);
                             con.lpush::<_, _, i32>(&r.queue, &r.task)?;
                             con.zadd::<_, f64, _, i32>(&r.set, &r.task, now)?;
-                            println!("  ->  {:?} pushed to queue {:?} and set {:?}", &r.task, &r.queue, &r.set);
-
                         }
                     },
                     Err(err) => {
