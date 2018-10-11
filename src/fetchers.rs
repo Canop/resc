@@ -21,7 +21,7 @@ pub struct Fetcher {
 }
 
 impl Fetcher {
-    fn get_key(&self, key: &String) -> String {
+    fn returned_key(&self, key: &str) -> String {
         format!("{}.{}", self.returns, key)
     }
 
@@ -32,10 +32,10 @@ impl Fetcher {
                 for (key, value) in object_value.iter() {
                     match value {
                         Value::String(string_value) => {
-                            props.insert(self.get_key(key), string_value.to_owned());
+                            props.insert(self.returned_key(key), string_value.to_owned());
                         }
                         Value::Number(number_value) => {
-                            props.insert(self.get_key(key), number_value.to_string());
+                            props.insert(self.returned_key(key), number_value.to_string());
                         }
                         _ => {
                             println!(" ignoring property {:#?}={:#?}", key, value);

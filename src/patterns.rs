@@ -12,7 +12,7 @@ pub struct Pattern {
 }
 
 impl Pattern {
-    pub fn inject<'a>(&self, props: &HashMap<String, String>) -> String {
+    pub fn inject(&self, props: &HashMap<String, String>) -> String {
         lazy_static! {
             static ref out_group_regex: Regex = Regex::new(r"\$\{([\w.]+)\}").unwrap();
         }

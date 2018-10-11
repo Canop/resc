@@ -22,7 +22,7 @@ pub struct Rule {
 }
 
 impl Rule {
-    fn is_match(&self, task: &String) -> bool {
+    fn is_match(&self, task: &str) -> bool {
         self.on_regex.is_match(task)
     }
     fn result(&self, props: &HashMap<String, String>) -> RuleResult {
@@ -33,7 +33,7 @@ impl Rule {
         }
     }
     // Assumes the rule matches.
-    pub fn results(&self, task: &String) -> RescResult<Vec<RuleResult>> {
+    pub fn results(&self, task: &str) -> RescResult<Vec<RuleResult>> {
         let mut props: HashMap<String, String> = HashMap::new();
         props.insert("input_task".to_owned(), task.to_owned());
         let caps = self.on_regex.captures(task).unwrap();
@@ -45,7 +45,7 @@ impl Rule {
                 }
             }
         }
-        if self.fetchers.len() > 0 {
+        if !self.fetchers.is_empty() {
             // if there are fetchers, we'll fetch all the possible results
             // and generate a ruleresult per fetchresult
             for fetcher in &self.fetchers {
@@ -54,7 +54,7 @@ impl Rule {
                 for mut fetch_result in fetch_results {
                     // we inject the parent properties
                     // This is heavy but makes the whole simpler
-                    for (key, value) in props.iter() {
+                    for (key, value) in &props {
                         // is there a shortcut ?
                         fetch_result.props.insert(key.clone(), value.clone());
                     }
@@ -75,7 +75,7 @@ pub struct Ruleset {
 }
 
 impl Ruleset {
-    pub fn matching_rules(&self, task: &String) -> Vec<&Rule> {
+    pub fn matching_rules(&self, task: &str) -> Vec<&Rule> {
         self.rules.iter().filter(|r| r.is_match(&task)).collect()
     }
 }
