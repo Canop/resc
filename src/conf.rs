@@ -58,7 +58,7 @@ impl JConv for Value {
                 _ => "<anonymous rule>".to_owned(),
             };
 
-            let on_pattern = self.get_l2_string("on", "done")?;
+            let on_pattern = self.get_string("on")?;
             let on_regex = match Regex::new(&on_pattern) {
                 Ok(r) => r,
                 Err(_) => return Err("invalid on/done pattern".into()),
@@ -72,17 +72,17 @@ impl JConv for Value {
                 }
             }
 
-            let todo_task = Pattern { src: self.get_l2_string("todo", "task")? };
-            let todo_queue = Pattern { src: self.get_l2_string("todo", "queue")? };
-            let todo_set = Pattern { src: self.get_l2_string("todo", "set")? };
+            let make_task = Pattern { src: self.get_l2_string("make", "task")? };
+            let make_queue = Pattern { src: self.get_l2_string("make", "queue")? };
+            let make_set = Pattern { src: self.get_l2_string("make", "set")? };
 
             Ok(Rule{
                 name,
                 on_regex,
                 fetchers,
-                todo_task,
-                todo_queue,
-                todo_set,
+                make_task,
+                make_queue,
+                make_set,
             })
     }
 

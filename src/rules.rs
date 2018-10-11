@@ -17,9 +17,9 @@ pub struct Rule {
     pub name: String,
     pub on_regex: Regex,
     pub fetchers: Vec<Fetcher>,
-    pub todo_task: Pattern,
-    pub todo_queue: Pattern,
-    pub todo_set: Pattern,
+    pub make_task: Pattern,
+    pub make_queue: Pattern,
+    pub make_set: Pattern,
 }
 
 impl Rule {
@@ -28,9 +28,9 @@ impl Rule {
     }
     fn result(&self, props: &HashMap<String, String>) -> RuleResult {
         RuleResult{
-            task: self.todo_task.inject(&props),
-            queue: self.todo_queue.inject(&props),
-            set: self.todo_set.inject(&props),
+            task: self.make_task.inject(&props),
+            queue: self.make_queue.inject(&props),
+            set: self.make_set.inject(&props),
         }
     }
     // Assumes the rule matches.

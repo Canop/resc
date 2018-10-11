@@ -9,10 +9,8 @@
 			"rules": [
 				{
 					"name": "TRT computation on data acquisition",
-					"on": {
-						"done": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$"
-					},
-					"todo": {
+					"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
+					"make": {
 						"task": "trt/${process_id}/${product_id}",
 						"queue": "trt/${process_id}/todo",
 						"set": "${product_id}/todo"
@@ -20,14 +18,12 @@
 				},
 				{
 					"name": "TRT propagation to childs",
-					"on": {
-						"done": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$"
-					},
+					"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
 					"fetch": [{
 						"url": "http://localhost:8080/eyeron/pub/products/${product_id}/direct-childs",
 						"returns": "child"
 					}],
-					"todo": {
+					"make": {
 						"task": "trt/${child.processId}/${child.productId}",
 						"queue": "trt/${child.processId}/todo",
 						"set": "${child.productId}/todo"
