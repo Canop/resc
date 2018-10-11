@@ -36,6 +36,7 @@ impl Rule {
     // Assumes the rule matches.
     pub fn results(&self, task: &String) -> RescResult<Vec<RuleResult>> {
         let mut props: HashMap<String, String> = HashMap::new();
+        props.insert("input_task".to_owned(), task.to_owned());
         let caps = self.on_regex.captures(task).unwrap();
         let mut results = Vec::new();
         for groupname in self.on_regex.capture_names() {
