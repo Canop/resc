@@ -73,7 +73,7 @@ After having executed all rules on this task, it's cleared from the `"global/tak
 
 ## Example 2 : Fetching some data to compute new tasks
 
-Sometimes it might be necessary to query a web service to determine what tasks must be done.
+Sometimes it might be necessary to query a web service to compute the tasks to generate in response to an event.
 
 Let's say there is a REST service returning the elements which would be logically impacted when some other one change (for example a change in a customer command might involve the recomputing of some product validity for that command).
 
@@ -118,7 +118,7 @@ A possible variant of this rule would be to pass the task to another queue, for 
 
 This is a very preliminary version, without any kind of guarantee.
 
-It's still a Work In Progress and presented here for easier peer review.
+It's still a Work In Progress and submitted to GitHub for easier peer review.
 
 # License
 
