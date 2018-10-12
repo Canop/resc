@@ -25,27 +25,22 @@ impl Fetcher {
         format!("{}.{}", self.returns, key)
     }
 
-    fn get_fetch_result(&self, value: &Value) -> RescResult<FetchResult> {
-        match value {
-            Value::Object(object_value) => {
-                let mut props = HashMap::new();
-                for (key, value) in object_value.iter() {
-                    match value {
-                        Value::String(string_value) => {
-                            props.insert(self.returned_key(key), string_value.to_owned());
-                        }
-                        Value::Number(number_value) => {
-                            props.insert(self.returned_key(key), number_value.to_string());
-                        }
-                        _ => {
-                            println!(" ignoring property {:#?}={:#?}", key, value);
-                        }
-                    }
+    fn get_fetch_result(&self, object_value: &serde_json::Map<String, Value>) -> FetchResult {
+        let mut props = HashMap::new();
+        for (key, value) in object_value {
+            match value {
+                Value::String(string_value) => {
+                    props.insert(self.returned_key(key), string_value.to_owned());
                 }
-                Ok(FetchResult { props })
+                Value::Number(number_value) => {
+                    props.insert(self.returned_key(key), number_value.to_string());
+                }
+                _ => {
+                    println!(" ignoring property {:#?}={:#?}", key, value);
+                }
             }
-            _ => Err("unexpected json value type".into()),
         }
+        FetchResult{ props }
     }
 
     pub fn results(&self, props: &HashMap<String, String>) -> RescResult<Vec<FetchResult>> {
@@ -59,11 +54,20 @@ impl Fetcher {
         response.read_to_string(&mut json)?;
         let mut results = Vec::new();
         let value: Value = serde_json::from_str(&json)?;
+        // we accept either a simple object, or an array of objects
         match value {
             Value::Array(returned_values) => {
                 for returned_value in &returned_values {
-                    results.push(self.get_fetch_result(returned_value)?);
+                    match returned_value {
+                        Value::Object(object_value) => {
+                            results.push(self.get_fetch_result(object_value));
+                        },
+                        _ => return Err("unexpected json value type".into()),
+                    }
                 }
+            }
+            Value::Object(returned_value) => {
+                results.push(self.get_fetch_result(&returned_value));
             }
             _ => return Err("unexpected content".into()),
         }

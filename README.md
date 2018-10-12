@@ -54,7 +54,7 @@ or (during development)
 
 Resc starts a watcher, a thread, over the specified `input_queue`.
 
-When a new event (a string in the `global/done` list) appears, it's atomically moved (using [BRPOPLPUSH](https://redis.io/commands/brpoplpush)) to the `taken/global` list and watcher's rules are executed.
+When a new event (a string in the `global/done` list) appears, it's atomically moved (using [BRPOPLPUSH](https://redis.io/commands/brpoplpush)) to the `global/taken` list and watcher's rules are executed.
 
 Assuming the coming task is `"acq/123/456"`, then the first (and unique) rule of our example will match, according to the regular expression in `"on"/"done"`.
 
