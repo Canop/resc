@@ -30,9 +30,7 @@ Here's a simple configuration file:
 				"rules": [
 					{
 						"name": "TRT computation on data acquisition",
-						"on": {
-							"done": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$"
-						},
+						"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
 						"todo": {
 							"task": "trt/${process_id}/${product_id}",
 							"queue": "trt/${process_id}/todo",
@@ -56,7 +54,7 @@ Resc starts a watcher, a thread, over the specified `input_queue`.
 
 When a new event (a string in the `global/done` list) appears, it's atomically moved (using [BRPOPLPUSH](https://redis.io/commands/brpoplpush)) to the `global/taken` list and watcher's rules are executed.
 
-Assuming the coming task is `"acq/123/456"`, then the first (and unique) rule of our example will match, according to the regular expression in `"on"/"done"`.
+Assuming the coming task is `"acq/123/456"`, then the first (and unique) rule of our example will match, according to the regular expression in `"on""`.
 
 Several variables are dynamically generated and valued:
 
@@ -94,9 +92,7 @@ Then the relevant rule could be like this:
 
 	{
 		"name": "TRT propagation to childs",
-		"on": {
-			"done": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$"
-		},
+		"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
 		"fetch": [{
 			"url": "http://my-web-service/products/${product_id}/direct-childs",
 			"returns": "child"

@@ -32,7 +32,7 @@ impl Rule {
             set: self.make_set.inject(&props),
         }
     }
-    // Assumes the rule matches.
+    // Assuming the rule matches, computes the rule results
     pub fn results(&self, task: &str) -> RescResult<Vec<RuleResult>> {
         let mut props: HashMap<String, String> = HashMap::new();
         props.insert("input_task".to_owned(), task.to_owned());
