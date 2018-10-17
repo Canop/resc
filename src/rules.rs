@@ -50,7 +50,7 @@ impl Rule {
             // and generate a ruleresult per fetchresult
             for fetcher in &self.fetchers {
                 let mut fetch_results = fetcher.results(&props)?;
-                //println!("    -> fetch results {:#?}", &fetch_results);
+                debug!("    -> fetch results {:#?}", &fetch_results);
                 for mut fetch_result in fetch_results {
                     // we inject the parent properties
                     // This is heavy but makes the whole simpler
@@ -58,7 +58,7 @@ impl Rule {
                         // is there a shortcut ?
                         fetch_result.props.insert(key.clone(), value.clone());
                     }
-                    //println!(" merged: {:#?}", &fetch_result.props);
+                    trace!(" merged: {:#?}", &fetch_result.props);
                     results.push(self.result(&fetch_result.props));
                 }
             }

@@ -69,6 +69,18 @@ The task is also referenced in this sorted set with the timestamp as score.
 
 After having executed all rules on this task, it's cleared from the `"global/taken"` queue and the watcher goes on watching the `"global/done"` queue again for other tasks.
 
+### Logging
+
+You don't usually want a lot of log, but during the setup of your system you might want to see what events comes in your queues and what tasks are generated.
+
+You can see more by setting the log level to `INFO`:
+
+	RUST_LOG="info" resc demo/demo.conf.json
+
+or if you want to see what rules where activated:
+
+	RUST_LOG="debug" resc demo/demo.conf.json
+
 ## Fetching some data to compute new tasks
 
 Sometimes it might be necessary to query a web service to compute the tasks to generate in response to an event.

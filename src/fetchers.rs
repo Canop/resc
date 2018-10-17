@@ -36,16 +36,16 @@ impl Fetcher {
                     props.insert(self.returned_key(key), number_value.to_string());
                 }
                 _ => {
-                    println!(" ignoring property {:#?}={:#?}", key, value);
+                    debug!(" ignoring property {:#?}={:#?}", key, value);
                 }
             }
         }
-        FetchResult{ props }
+        FetchResult { props }
     }
 
     pub fn results(&self, props: &HashMap<String, String>) -> RescResult<Vec<FetchResult>> {
         let url = self.url.inject(&props).to_string();
-        println!("  querying url: {:#?}", url);
+        info!("  querying url: {:#?}", url);
         let mut response = reqwest::get(&url)?;
         if !response.status().is_success() {
             return Err(format!("     -> request answered an error : {}", response.status()).into());
@@ -61,7 +61,7 @@ impl Fetcher {
                     match returned_value {
                         Value::Object(object_value) => {
                             results.push(self.get_fetch_result(object_value));
-                        },
+                        }
                         _ => return Err("unexpected json value type".into()),
                     }
                 }
