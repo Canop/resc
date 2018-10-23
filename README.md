@@ -11,9 +11,27 @@ It achieves this in a safe and monitorable way and takes care, for example, of a
 
 Resc is written in rust for safety and performance.
 
+# Workers
+
+Resc is the scheduler, not the worker(s).
+
+It assumes the workers handle the taks in this very simple way:
+
+1. pick a task in a queue and atomically move it to a "taken" list : `BRPOPLPUSH myqueue/todo myqueue/taken 0`
+
+2. do the task
+
+3. clean the "taken" list : `LREM myqueue/taken the-task`
+
+4. notify the scheduler the task is done by pushing it to a "done" queue: `LPUSH global/done the-task`
+
+This scheme ensures several workers can safely work on the same queue.
+
+A java implementation of a worker is provided in the examples directory.
+
 # Introductory Example
 
-This example can be found in this repository as `examples/conf.json`.
+The complete instructions on executing this example, and a business logic explanation, are available at [examples/simple-example.md](examples/simple-example.md).
 
 ## Simple regex based task generation
 
@@ -44,11 +62,11 @@ Here's a simple configuration file:
 
 Resc can be launched with this configuration using
 
-	resc examples/conf.json
+	resc myconf.json
 
 or (during development)
 
-	cargo run -- examples/conf.json
+	cargo run -- myconf.json
 
 Resc starts a watcher, a thread, over the specified `input_queue`.
 
@@ -75,11 +93,11 @@ You don't usually want a lot of log, but during the setup of your system you mig
 
 You can see more by setting the log level to `INFO`:
 
-	RUST_LOG="info" resc examples/conf.json
+	RUST_LOG="info" resc myconf.json
 
 or if you want to see what rules where activated:
 
-	RUST_LOG="debug" resc examples/conf.json
+	RUST_LOG="debug" resc myconf.json
 
 ## Fetching some data to compute new tasks
 

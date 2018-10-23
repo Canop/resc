@@ -29,7 +29,7 @@ impl Watcher {
             );
             if let Ok(n) = con.zrem::<_, _, i32>(&self.task_set, &done) {
                 if n>0 {
-                    debug!("  previously queued task end");
+                    debug!(" previously queued task end");
                 }
             }
             let matching_rules = self.ruleset.matching_rules(&done);
@@ -43,10 +43,7 @@ impl Watcher {
                                 info!("  task {:?} already queued @ {}", &r.task, time);
                                 continue;
                             }
-                            info!(
-                                "  ->  {:?} pushed to queue {:?} and set {:?}",
-                                &r.task, &r.queue, &self.task_set
-                            );
+                            info!("  ->  {:?} pushed to queue {:?}", &r.task, &r.queue);
                             con.lpush::<_, _, i32>(&r.queue, &r.task)?;
                             con.zadd::<_, f64, _, i32>(&self.task_set, &r.task, now)?;
                         }
