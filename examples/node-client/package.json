@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "bluebird": "^3.5.2",
+    "redis": "^2.8.0"
+  }
+}

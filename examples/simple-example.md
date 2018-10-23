@@ -5,6 +5,9 @@ This simple example shows
 
 * the resc scheduler generating tasks according to one of the simplest possible rule
 * one or several java worker(s) picking up tasks, executing them, and signaling end of execution
+* one or several node.js worker(s) picking up tasks, executing them, and signaling end of execution
+
+The node and java workers have exactly the same behavior;
 
 The business logic here is that a source sends events informing us that some data has been received regarding a plant "plantA" and several products (the nature of this event is `"acq"`) and that we must execute some treatments.
 
@@ -32,6 +35,14 @@ Move to the `examples/java-client` directory, then run
 
 This builds the `target/java-resc-worker-01.jar` jar file.
 
+### Preparation of the node.js worker
+
+You need to have node and yarn installed
+
+Move to the `examples/node-client` directory, then run
+
+	yarn
+
 ## Running the Simple Example
 
 All this can be done in whatever order. In order to see what happens you should have one console per program.
@@ -58,9 +69,12 @@ If you want to see something, you should set the log level to "debug" or at leas
 
 ### Starting workers
 
-Launch as many workers as desired, with
+Launch as many workers as desired, with either
 
 	java -jar examples/java-client/target/java-resc-worker-0.1.jar
+
+or
+	node examples/node-client/main.js
 
 You should see
 

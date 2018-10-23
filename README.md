@@ -27,7 +27,7 @@ It assumes the workers handle the taks in this very simple way:
 
 This scheme ensures several workers can safely work on the same queue.
 
-A java implementation of a worker is provided in the examples directory.
+Java and node.js implementations of workers are provided in the examples directory.
 
 # Introductory Example
 
