@@ -3,7 +3,7 @@
 
 Redis lists are wonderful as task queues for distributed workers. A worker can safely and atomically take a task, even when several ones watch the same queue.
 
-Resc is a reliable and configurable task generator for redis.
+**Resc** is a reliable and configurable task generator for redis.
 
 It watches one or several queues for events, which can be task completion notifications or simple "root" events, and applies rules to generate tasks.
 
@@ -13,9 +13,7 @@ Resc is written in rust for safety and performance.
 
 # Workers
 
-Resc is the scheduler, not the worker(s).
-
-It assumes the workers handle the taks in this very simple way:
+Resc, as a scheduler, assumes workers handle taks in this very simple way:
 
 1. pick a task in a queue and atomically move it to a "taken" list : `BRPOPLPUSH myqueue/todo myqueue/taken 0`
 
