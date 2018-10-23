@@ -7,7 +7,8 @@ use std::time::SystemTime;
 
 #[derive(Debug)]
 pub struct Watcher {
-    pub redis_url: String,
+    pub redis_url: String, // same for all workers
+    pub task_set: String, // same for all workers
     pub input_queue: String,
     pub taken_queue: String,
     pub ruleset: Ruleset,
@@ -26,6 +27,11 @@ impl Watcher {
                 "<- got {:?} in queue {:?} @ {}",
                 &done, &self.input_queue, now
             );
+            if let Ok(n) = con.zrem::<_, _, i32>(&self.task_set, &done) {
+                if n>0 {
+                    debug!("  previously queued task end");
+                }
+            }
             let matching_rules = self.ruleset.matching_rules(&done);
             debug!(" {} matching rule(s)", matching_rules.len());
             for r in &matching_rules {
@@ -33,16 +39,16 @@ impl Watcher {
                 match r.results(&done) {
                     Ok(results) => {
                         for r in &results {
-                            if let Ok(time) = con.zscore::<_, _, i32>(&r.set, &r.task) {
+                            if let Ok(time) = con.zscore::<_, _, i32>(&self.task_set, &r.task) {
                                 info!("  task {:?} already queued @ {}", &r.task, time);
                                 continue;
                             }
                             info!(
                                 "  ->  {:?} pushed to queue {:?} and set {:?}",
-                                &r.task, &r.queue, &r.set
+                                &r.task, &r.queue, &self.task_set
                             );
                             con.lpush::<_, _, i32>(&r.queue, &r.task)?;
-                            con.zadd::<_, f64, _, i32>(&r.set, &r.task, now)?;
+                            con.zadd::<_, f64, _, i32>(&self.task_set, &r.task, now)?;
                         }
                     }
                     Err(err) => error!("  Rule execution failed: {:?}", err),

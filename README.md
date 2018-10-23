@@ -13,7 +13,7 @@ Resc is written in rust for safety and performance.
 
 # Introductory Example
 
-This example can be found in this repository as `demo/demo.conf.json`.
+This example can be found in this repository as `examples/conf.json`.
 
 ## Simple regex based task generation
 
@@ -23,6 +23,7 @@ Here's a simple configuration file:
 		"redis": {
 			"url": "redis://127.0.0.1/"
 		},
+		"task_set": "global/todo",
 		"watchers": [
 			{
 				"input_queue": "global/done",
@@ -34,7 +35,6 @@ Here's a simple configuration file:
 						"todo": {
 							"task": "trt/${process_id}/${product_id}",
 							"queue": "trt/${process_id}/todo",
-							"set": "products/${product_id}/todo"
 						}
 					}
 				]
@@ -44,11 +44,11 @@ Here's a simple configuration file:
 
 Resc can be launched with this configuration using
 
-	resc demo/demo.conf.json
+	resc examples/conf.json
 
 or (during development)
 
-	cargo run -- demo/demo.conf.json
+	cargo run -- examples/conf.json
 
 Resc starts a watcher, a thread, over the specified `input_queue`.
 
@@ -63,7 +63,7 @@ Several variables are dynamically generated and valued:
 
 Those variables are used to extrapolate the task, queue and set of the todo part of the rule.
 
-The taks `"trt/123/456"` would then be created and pushed to the `"trt/123/todo"` queue, after having checked it's not in the sorted set `"products/456/todo"`.
+The taks `"trt/123/456"` would then be created and pushed to the `"trt/123/todo"` queue, after having checked it's not in the sorted set `"global/todo"`.
 
 The task is also referenced in this sorted set with the timestamp as score.
 
@@ -75,11 +75,11 @@ You don't usually want a lot of log, but during the setup of your system you mig
 
 You can see more by setting the log level to `INFO`:
 
-	RUST_LOG="info" resc demo/demo.conf.json
+	RUST_LOG="info" resc examples/conf.json
 
 or if you want to see what rules where activated:
 
-	RUST_LOG="debug" resc demo/demo.conf.json
+	RUST_LOG="debug" resc examples/conf.json
 
 ## Fetching some data to compute new tasks
 
@@ -135,6 +135,7 @@ The new configuration becomes
 		"redis": {
 			"url": "redis://127.0.0.1/"
 		},
+		"task_set": "global/todo",
 		"watchers": [
 			{
 				"input_queue": "global/done",
@@ -145,8 +146,7 @@ The new configuration becomes
 						"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
 						"make": {
 							"task": "trt/${process_id}/${product_id}",
-							"queue": "trt/${process_id}/todo",
-							"set": "${product_id}/todo"
+							"queue": "trt/${process_id}/todo"
 						}
 					},
 					{
@@ -170,8 +170,7 @@ The new configuration becomes
 						}],
 						"make": {
 							"task": "trt/${child.processId}/${child.productId}",
-							"queue": "trt/${child.processId}/todo",
-							"set": "${child.productId}/todo"
+							"queue": "trt/${child.processId}/todo"
 						}
 					}
 				]

@@ -8,7 +8,6 @@ use std::collections::HashMap;
 pub struct RuleResult {
     pub task: String,
     pub queue: String,
-    pub set: String,
 }
 
 #[derive(Debug)]
@@ -18,7 +17,6 @@ pub struct Rule {
     pub fetchers: Vec<Fetcher>,
     pub make_task: Pattern,
     pub make_queue: Pattern,
-    pub make_set: Pattern,
 }
 
 impl Rule {
@@ -29,7 +27,6 @@ impl Rule {
         RuleResult {
             task: self.make_task.inject(&props),
             queue: self.make_queue.inject(&props),
-            set: self.make_set.inject(&props),
         }
     }
     // Assuming the rule matches, computes the rule results
