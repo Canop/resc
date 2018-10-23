@@ -79,7 +79,7 @@ Several variables are dynamically generated and valued:
 	process_id = 123
 	product_id = 456
 
-Those variables are used to extrapolate the task, queue and set of the todo part of the rule.
+Those variables are used to extrapolate the task and queue of the todo part of the rule.
 
 The taks `"trt/123/456"` would then be created and pushed to the `"trt/123/todo"` queue, after having checked it's not in the sorted set `"global/todo"`.
 
@@ -130,7 +130,6 @@ Then the relevant rule could be like this:
 		"todo": {
 			"task": "trt/${child.processId}/${child.productId}",
 			"queue": "trt/${child.processId}/todo",
-			"set": "${child.productId}/todo"
 		}
 	}
 
@@ -205,8 +204,6 @@ Some settings are optional.
 When omitted, `taken_queue` is simply `input_queue` with `/taken` added. So here the second watcher would use as temporary queue `global/to-propagate/taken`.
 
 When `make/task` is omitted, the generated task is the same string as the input task. More precisely, the default value of `make/task` is `"${input_task}"`, `${input_task}` being a variable you can use in your task/queue/set generation.
-
-When omitted, `make/set` is `make/queue` with `/set` added.
 
 # Development Status
 
