@@ -1,0 +1,7 @@
+[package]
+name = "rust-client"
+version = "0.1.0"
+authors = ["Denys Séguret <denys.seguret@gmail.com>"]
+
+[dependencies]
+redis = "0.9.1"

@@ -6,6 +6,7 @@ This simple example shows
 * the resc scheduler generating tasks according to one of the simplest possible rule
 * one or several java worker(s) picking up tasks, executing them, and signaling end of execution
 * one or several node.js worker(s) picking up tasks, executing them, and signaling end of execution
+* one or several rust worker(s) picking up tasks, executing them, and signaling end of execution
 
 The node and java workers have exactly the same behavior;
 
@@ -43,6 +44,10 @@ Move to the `examples/node-client` directory, then run
 
 	yarn
 
+### Preparation of the rust worker
+
+As this is only a demonstration, we don't need to compile as release. We do nothing here.
+
 ## Running the Simple Example
 
 All this can be done in whatever order. In order to see what happens you should have one console per program.
@@ -69,16 +74,25 @@ If you want to see something, you should set the log level to "debug" or at leas
 
 ### Starting workers
 
-Launch as many workers as desired, with either
+Launch as many workers as desired.
+
+Whatever the worker you launch, you should see
+
+	listening on queue trt/plantA/todo
+
+#### Start a Java worker
 
 	java -jar examples/java-client/target/java-resc-worker-0.1.jar
 
-or
+#### Start a node worker
+
 	node examples/node-client/main.js
 
-You should see
+#### Start a rust worker
 
-	listening on queue trt/plantA/todo
+	cd examples/rust-client
+	cargo run
+
 
 ### Generating a few root events
 

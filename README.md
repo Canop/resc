@@ -25,7 +25,7 @@ Resc, as a scheduler, assumes workers handle taks in this very simple way:
 
 This scheme ensures several workers can safely work on the same queue.
 
-Java and node.js implementations of workers are provided in the examples directory.
+Java, Rust and node.js implementations of workers are provided in the examples directory.
 
 # Introductory Example
 
