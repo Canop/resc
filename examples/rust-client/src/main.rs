@@ -10,7 +10,6 @@ const taken_queue: &str = "trt/plantA/taken";
 const output_queue: &str = "global/done";
 
 fn handle_task(task: &str) {
-    println!("task {:?}", task);
     match task.split("/").collect::<Vec<&str>>().as_slice() {
         [nature, process, product] => {
             print!(
