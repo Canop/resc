@@ -5,3 +5,4 @@ target
 *.iml
 dependency-reduced-pom.xml
 node_modules
+examples/go-client/go-client

@@ -44,6 +44,19 @@ Move to the `examples/node-client` directory, then run
 
 	yarn
 
+### Compilation of the Go worker
+
+You need to have a go dev environment set up.
+
+Start by fetching the official Go Redis driver:
+
+	go get github.com/garyburd/redigo/redis
+
+Then compile the application:
+
+	cd examples/go-client
+	go build
+
 ### Preparation of the rust worker
 
 As this is only a demonstration, we don't need to compile as release. We do nothing here.
@@ -87,6 +100,10 @@ Whatever the worker you launch, you should see
 #### Start a node worker
 
 	node examples/node-client/main.js
+
+#### Start a go worker
+
+	examples/go-client/go-client
 
 #### Start a rust worker
 
