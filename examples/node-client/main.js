@@ -34,7 +34,7 @@ console.log(`Worker listening on queue ${inputQueue}`)
 				await client.lpushAsync(outputQueue, taskName) //# notify the scheduler the job is done
 				await client.lremAsync(takenQueue, 1, taskName) //# Remove the task from taken
 			} catch (e) {
-				err = e
+				console.warn("There was an error while pushing the task back:", e)
 			}
 		} else if (err) {
 			console.warn("There was an error:", err)
