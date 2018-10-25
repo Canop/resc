@@ -21,7 +21,7 @@ func handleTask(task string) {
 	}
 	nature, process, product := tokens[0], tokens[1], tokens[2]
 	fmt.Printf("Executing %s for product %s on process %s ", nature, product, process)
-	for i:=0; i<10; i++ {
+	for i := 0; i < 10; i++ {
 		time.Sleep(time.Second)
 		fmt.Print(".")
 	}
@@ -30,11 +30,11 @@ func handleTask(task string) {
 
 func main() {
 	con, err := redis.DialURL(REDIS_URL)
-	if err!=nil {
+	if err != nil {
 		log.Fatalf("Could not connect: %v\n", err)
 	}
 	defer con.Close()
-	log.Printf("Worker listening on queue %+v\n", INPUT_QUEUE);
+	log.Printf("Worker listening on queue %+v\n", INPUT_QUEUE)
 	log.Printf(" connected\n")
 	for {
 		task, _ := redis.String(con.Do("BRPOPLPUSH", INPUT_QUEUE, TAKEN_QUEUE, 60))
