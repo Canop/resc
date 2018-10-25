@@ -1,9 +1,10 @@
+/// A Fetcher is responsible for synchronously fetching some data
+/// (for use in handling a rule)
+
 use errors::RescResult;
 use patterns::Pattern;
 use reqwest;
 use serde_json::{self, Value};
-/// A Fetcher is responsible for synchronously fetching some data
-/// (for use in handling a rule)
 use std::collections::HashMap;
 use std::io::Read;
 

@@ -4,7 +4,6 @@ use redis::Commands;
 use std::io::{self, Write};
 use std::time::Duration;
 
-// in a real program, this should be provided by configuration
 const REDIS_URL: &str = "redis://127.0.0.1/";
 const INPUT_QUEUE: &str = "trt/plantA/todo";
 const TAKEN_QUEUE: &str = "trt/plantA/taken";
