@@ -1,11 +1,8 @@
-#[macro_use]
 extern crate lazy_static;
 extern crate redis;
 extern crate regex;
 extern crate reqwest;
 extern crate serde_json;
-
-#[macro_use]
 extern crate log;
 extern crate env_logger;
 
@@ -16,6 +13,7 @@ mod patterns;
 mod rules;
 mod watchers;
 
+use log::*;
 use std::env;
 use std::thread;
 

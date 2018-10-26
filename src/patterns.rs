@@ -3,6 +3,7 @@
 ///
 use regex::{Captures, Regex};
 use std::collections::HashMap;
+use lazy_static::lazy_static;
 
 // optm: locations of groups in output patterns could be computed
 //       when initializing

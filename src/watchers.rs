@@ -1,9 +1,12 @@
-use errors::RescResult;
-use redis::{self, Commands, Connection};
-use rules::Ruleset;
 /// A watcher watches the events incoming in one specific queue
 /// and applies rules to generate tasks
+
+use log::*;
+use redis::{self, Commands, Connection};
+use rules::Ruleset;
 use std::time::SystemTime;
+
+use errors::RescResult;
 
 #[derive(Debug)]
 pub struct Watcher {

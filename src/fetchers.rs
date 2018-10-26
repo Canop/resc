@@ -1,6 +1,7 @@
 /// A Fetcher is responsible for synchronously fetching some data
 /// (for use in handling a rule)
 
+use log::*;
 use errors::RescResult;
 use patterns::Pattern;
 use reqwest;

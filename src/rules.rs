@@ -1,8 +1,10 @@
+use log::*;
+use regex::Regex;
+use std::collections::HashMap;
+
 use errors::RescResult;
 use fetchers::Fetcher;
 use patterns::Pattern;
-use regex::Regex;
-use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct RuleResult {
