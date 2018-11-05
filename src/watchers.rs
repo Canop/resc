@@ -1,6 +1,5 @@
 /// A watcher watches the events incoming in one specific queue
 /// and applies rules to generate tasks
-
 use log::*;
 use redis::{self, Commands, Connection};
 use rules::Ruleset;
@@ -18,16 +17,21 @@ pub struct Watcher {
 }
 
 impl Watcher {
-
     fn empty_taken_queue(&self, con: &Connection) {
         debug!("watcher cleans its taken queue");
         let mut n = 0;
         while let Ok(taken) = con.rpoplpush::<_, String>(&self.taken_queue, &self.input_queue) {
-           debug!(" moving {:?} from {:?} to {:?}", &taken, &self.taken_queue, &self.input_queue);
-           n = n+1;
+            debug!(
+                " moving {:?} from {:?} to {:?}",
+                &taken, &self.taken_queue, &self.input_queue
+            );
+            n = n + 1;
         }
         if n > 0 {
-            warn!("moved {} tasks from  {:?} to {:?}", n, &self.taken_queue, &self.input_queue);
+            warn!(
+                "moved {} tasks from  {:?} to {:?}",
+                n, &self.taken_queue, &self.input_queue
+            );
         }
     }
 

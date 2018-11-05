@@ -1,7 +1,6 @@
 /// handle reading and parsing a JSON configuration file
 /// checking the consistency
 /// and building the Conf object.
-
 use regex::Regex;
 use serde_json::{self, Value};
 use std::fs;

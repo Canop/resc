@@ -1,9 +1,9 @@
+use lazy_static::lazy_static;
 /// Patterns are built from strings like "bla ${some_var} ${some.otherone} bla"
 /// and are expanded with HashMap<String, String>
 ///
 use regex::{Captures, Regex};
 use std::collections::HashMap;
-use lazy_static::lazy_static;
 
 // optm: locations of groups in output patterns could be computed
 //       when initializing

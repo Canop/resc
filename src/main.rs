@@ -1,10 +1,10 @@
+extern crate env_logger;
 extern crate lazy_static;
+extern crate log;
 extern crate redis;
 extern crate regex;
 extern crate reqwest;
 extern crate serde_json;
-extern crate log;
-extern crate env_logger;
 
 mod conf;
 mod errors;
