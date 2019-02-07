@@ -87,7 +87,7 @@ After having executed all rules on this task, it's cleared from the `"global/tak
 
 ### Logging
 
-You don't usually want a lot of log, but during the setup of your system you might want to see what events comes in your queues and what tasks are generated.
+You don't usually want a lot of log, that's why the default log includes only warnings, but during the setup of your system you might want to see what events comes in your queues and what tasks are generated.
 
 You can see more by setting the log level to `INFO`:
 
@@ -105,7 +105,7 @@ Let's say there is a REST service returning the elements which would be logicall
 
 If there's certain event on product 5ab7342600000040, you want to query
 
-     http://my-web-service/products/5ab7342600000040/direct-childs
+     http://my-web-service/products/5ab7342600000040/direct-children
 
 which responds in JSON with the list of products which should be recomputed:
 
@@ -119,10 +119,10 @@ and for each of those products you want to generate a new task.
 Then the relevant rule could be like this:
 
 	{
-		"name": "TRT propagation to childs",
+		"name": "TRT propagation to children",
 		"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
 		"fetch": [{
-			"url": "http://my-web-service/products/${product_id}/direct-childs",
+			"url": "http://my-web-service/products/${product_id}/direct-children",
 			"returns": "child"
 		}],
 		"todo": {
@@ -140,6 +140,7 @@ In our example, we'd end with two new tasks, `"trt/634876914/5ab7e7dc00000040"` 
 When you have several rules and one of them involves querying a remote service as in our example, you don't want all the rules to suffer from a possible slow-down of this remote service.
 
 That's when you may want to have another watcher, and thread, handling those specific task generations.
+
 In order to do that, you want a rule just passing the task to another queue which another watcher watches.
 
 Let's call this new queue `global/to-propagate`. Of course you give your queues the names you want.
@@ -165,7 +166,7 @@ The new configuration becomes
 						}
 					},
 					{
-						"name": "TRT propagation to childs : switch queue",
+						"name": "TRT propagation to children : switch queue",
 						"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
 						"make": {
 							"queue": "global/to-propagate"
@@ -177,10 +178,10 @@ The new configuration becomes
 				"input_queue": "global/to-propagate",
 				"rules": [
 					{
-						"name": "TRT propagation to childs : make child tasks",
+						"name": "TRT propagation to children : make child tasks",
 						"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
 						"fetch": [{
-							"url": "http://my-web-service/products/${product_id}/direct-childs",
+							"url": "http://my-web-service/products/${product_id}/direct-children",
 							"returns": "child"
 						}],
 						"make": {
@@ -195,9 +196,7 @@ The new configuration becomes
 
 This way no remote service can slow down the global queue managment.
 
-You may have noticed the configuration is a little lighter than what could have been expected.
-
-Some settings are optional.
+You may have noticed the configuration is a little lighter than what could have been expected. That's why some settings are optional.
 
 When omitted, `taken_queue` is simply `input_queue` with `/taken` added. So here the second watcher would use as temporary queue `global/to-propagate/taken`.
 

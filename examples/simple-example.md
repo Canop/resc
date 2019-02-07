@@ -18,7 +18,7 @@ So we'll manually generate events like `"acq/plantA/123"` and observe the schedu
 
 Of course Redis must be installed and started.
 
-### Compilation of the scheduler
+### Compilation of the scheduler
 
 In the root directory of the resc project, execute
 

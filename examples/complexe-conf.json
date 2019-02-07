@@ -17,7 +17,7 @@
 					}
 				},
 				{
-					"name": "TRT propagation to childs : switch queue",
+					"name": "TRT propagation to children : switch queue",
 					"on": "^trt/(?P<process_id>\\w+)/(?P<product_id>\\w{16})$",
 					"make": {
 						"queue": "global/to-propagate"
@@ -29,10 +29,10 @@
 			"input_queue": "global/to-propagate",
 			"rules": [
 				{
-					"name": "TRT propagation to childs : make child tasks",
+					"name": "TRT propagation to children : make child tasks",
 					"on": "^trt/(?P<process_id>\\w+)/(?P<product_id>\\w{16})$",
 					"fetch": [{
-						"url": "http://localhost:8080/eyeron/pub/products/${product_id}/direct-childs",
+						"url": "http://localhost:8080/eyeron/pub/products/${product_id}/direct-children",
 						"returns": "child"
 					}],
 					"make": {
