@@ -83,7 +83,7 @@ which removes everything.
 With the normal log setting, only errors and warning are displayed.
 If you want to see something, you should set the log level to "debug" or at least "info". In the root directory, do
 
-	RUST_LOG="debug" target/release examples/simple-conf.json
+	RUST_LOG=debug target/release/resc examples/simple-conf.json
 
 ### Starting workers
 
@@ -121,7 +121,7 @@ You should then see the scheduler immediately generating the 3 resulting tasks:
 
 ![generated tasks](doc/simple-example-generated-tasks.png)
 
-The workers pick tasks execute them, and then send back the tasks as done in `global/done`.
+The workers pick tasks, execute them, and then send back the tasks as done in `global/done`.
 
 Here's what your screen should look like:
 
