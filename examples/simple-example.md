@@ -3,7 +3,7 @@
 
 This simple example shows
 
-* the resc scheduler generating tasks according to one of the simplest possible rule
+* the resc scheduler generating tasks according to one of the simplest possible rules
 * one or several java worker(s) picking up tasks, executing them, and signaling end of execution
 * one or several node.js worker(s) picking up tasks, executing them, and signaling end of execution
 * one or several rust worker(s) picking up tasks, executing them, and signaling end of execution
@@ -11,6 +11,21 @@ This simple example shows
 The node and java workers have exactly the same behavior;
 
 The business logic here is that a source sends events informing us that some data has been received regarding a plant "plantA" and several products (the nature of this event is `"acq"`) and that we must execute some treatments.
+
+The scheduler rule here is just
+
+			"rules": [
+				{
+					"name": "TRT computation on data acquisition",
+					"on": "^acq/(?P<process_id>\\w+)/(?P<product_id>\\w+)$",
+					"make": {
+						"task": "trt/${process_id}/${product_id}",
+						"queue": "trt/${process_id}/todo"
+					}
+				}
+			]
+*[simple-conf.json](simple-conf.json)*
+
 
 So we'll manually generate events like `"acq/plantA/123"` and observe the scheduler generate tasks like `"trt/plantA/123"`, and then the worker(s) handle those tasks.
 
