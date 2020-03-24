@@ -1,23 +1,23 @@
 use lazy_static::lazy_static;
-/// Patterns are built from strings like "bla ${some_var} ${some.otherone} bla"
-/// and are expanded with HashMap<String, String>
-///
 use regex::{Captures, Regex};
 use std::collections::HashMap;
 
-// optm: locations of groups in output patterns could be computed
-//       when initializing
+/// Patterns are built from strings like "bla ${some_var} ${some.otherone} bla"
+/// and are expanded with HashMap<String, String>
+///
 #[derive(Debug)]
 pub struct Pattern {
     pub src: String,
 }
 
+// optm: locations of groups in output patterns could be computed
+//       when initializing
 impl Pattern {
     pub fn inject(&self, props: &HashMap<String, String>) -> String {
         lazy_static! {
-            static ref out_group_regex: Regex = Regex::new(r"\$\{([\w.]+)\}").unwrap();
+            static ref OUT_GROUP_REGEX: Regex = Regex::new(r"\$\{([\w.]+)\}").unwrap();
         }
-        out_group_regex
+        OUT_GROUP_REGEX
             .replace_all(&*self.src, |caps: &Captures| {
                 match props.get(&*caps.get(1).unwrap().as_str()) {
                     Some(value) => value,

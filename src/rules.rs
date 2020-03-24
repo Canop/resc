@@ -48,7 +48,7 @@ impl Rule {
             // if there are fetchers, we'll fetch all the possible results
             // and generate a ruleresult per fetchresult
             for fetcher in &self.fetchers {
-                let mut fetch_results = fetcher.results(&props)?;
+                let fetch_results = fetcher.results(&props)?;
                 debug!("    -> fetch results {:#?}", &fetch_results);
                 for mut fetch_result in fetch_results {
                     // we inject the parent properties

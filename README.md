@@ -93,7 +93,7 @@ You can see more by setting the log level to `INFO`:
 
 	RUST_LOG="info" resc myconf.json
 
-or if you want to see what rules where activated:
+or if you want to see what rules were activated:
 
 	RUST_LOG="debug" resc myconf.json
 
@@ -196,7 +196,7 @@ The new configuration becomes
 
 This way no remote service can slow down the global queue managment.
 
-You may have noticed the configuration is a little lighter than what could have been expected. That's why some settings are optional.
+You may have noticed the configuration is a little lighter than what could have been expected. It's because some settings are optional.
 
 When omitted, `taken_queue` is simply `input_queue` with `/taken` added. So here the second watcher would use as temporary queue `global/to-propagate/taken`.
 

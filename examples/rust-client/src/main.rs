@@ -38,12 +38,12 @@ fn main() {
         //# Take a task on input, put it on taken
         if let Ok(task) = con.brpoplpush::<_, String>(INPUT_QUEUE, TAKEN_QUEUE, 60) {
             handle_task(&task);
+            //# notify the scheduler the job is done
             if let Err(err) = con.lpush::<_, _, ()>(OUTPUT_QUEUE, &task) {
-                //# notify the scheduler the job is done
                 println!("error while lpushing the task back : {:?}", err);
             }
+            //# Remove the task from taken
             if let Err(err) = con.lrem::<_, _, ()>(TAKEN_QUEUE, 1, &task) {
-                //# Remove the task from taken
                 println!("error while cleaning the taken list : {:?}", err);
             }
         } else {

@@ -96,7 +96,7 @@ which removes everything.
 
 
 With the normal log setting, only errors and warning are displayed.
-If you want to see something, you should set the log level to "debug" or at least "info". In the root directory, do
+If you want to see something, you should set the log level to "debug" or at least "info". In the examples directory, do
 
 	RUST_LOG=debug target/release/resc examples/simple-conf.json
 

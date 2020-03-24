@@ -73,7 +73,7 @@ impl Watcher {
             }
             con.lrem(&self.taken_queue, 1, &done)?;
         }
-        Ok(()) // unreachable but necessary for signature (and might be reached in the future)
+        unreachable!();
     }
 
     pub fn run(&self) {
