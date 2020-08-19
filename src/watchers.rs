@@ -11,6 +11,7 @@ use errors::RescResult;
 pub struct Watcher {
     pub redis_url: String, // same for all watchers
     pub task_set: String,  // same for all watchers
+    pub listener_channel: String,  // same for all watchers
     pub input_queue: String,
     pub taken_queue: String,
     pub ruleset: Ruleset,
@@ -21,17 +22,11 @@ impl Watcher {
         debug!("watcher cleans its taken queue");
         let mut n = 0;
         while let Ok(taken) = con.rpoplpush::<_, String>(&self.taken_queue, &self.input_queue) {
-            debug!(
-                " moving {:?} from {:?} to {:?}",
-                &taken, &self.taken_queue, &self.input_queue
-            );
-            n = n + 1;
+           debug!(" moving {:?} from {:?} to {:?}", &taken, &self.taken_queue, &self.input_queue);
+           n = n+1;
         }
         if n > 0 {
-            warn!(
-                "moved {} tasks from  {:?} to {:?}",
-                n, &self.taken_queue, &self.input_queue
-            );
+            warn!("moved {} tasks from  {:?} to {:?}", n, &self.taken_queue, &self.input_queue);
         }
     }
 
@@ -49,7 +44,9 @@ impl Watcher {
             );
             if let Ok(n) = con.zrem::<_, _, i32>(&self.task_set, &done) {
                 if n > 0 {
-                    debug!(" previously queued task end");
+                    debug!(" previously queued task {:?} end", &done);
+                } else {
+                    debug!(" external task {:?} end", &done);
                 }
             }
             let matching_rules = self.ruleset.matching_rules(&done);
@@ -66,12 +63,16 @@ impl Watcher {
                             info!("  ->  {:?} pushed to queue {:?}", &r.task, &r.queue);
                             con.lpush::<_, _, i32>(&r.queue, &r.task)?;
                             con.zadd::<_, f64, _, i32>(&self.task_set, &r.task, now)?;
+                            devug!("      {:?} pushed to task_set {:?} @ {}", &r.task, &self.task_set, now);
+                            con.publish::<_,_,_>(&self.listener_channel, format!("{} TRIGGER {} -> {}", &self.taken_queue,  &done, &r.task))?;
                         }
                     }
                     Err(err) => error!("  Rule execution failed: {:?}", err),
                 }
             }
             con.lrem(&self.taken_queue, 1, &done)?;
+            con.publish::<_,_,_>(&self.listener_channel, format!("{} DONE {}", &self.taken_queue, &done))?;
+            debug!(" done with task {:?}", &done);
         }
         unreachable!();
     }

@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+version '1.0'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    mavenLocal()
+}
+compileJava.options.encoding = 'UTF-8'
+targetCompatibility = 11
+sourceCompatibility = 11
+
+mainClassName = "com.keods.resc.examples.SimpleWorker"
+
+dependencies {
+    implementation "redis.clients:jedis:3.2.0"
+}
+
+wrapper {
+    gradleVersion = "6.2.2"
+}

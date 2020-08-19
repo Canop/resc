@@ -63,11 +63,18 @@ public class SimpleWorker {
 
 	public static void main(String[] args) {
 		Jedis jedis = new Jedis(host);
-		// TODO on start, move everything from taken to input
+		System.out.println("Recovering tasks from queue " + takenQueue);
+		String task;
+		do {
+			task = jedis.rpoplpush(takenQueue, inputQueue);
+			if (task != null) System.out.println("Recovered task " + task);
+			else System.out.println("No more task in " + takenQueue);
+		} while (task != null);
+
 		System.out.println("Worker listening on queue " + inputQueue);
 		for (;;) {
 			String taskName = jedis.brpoplpush(inputQueue, takenQueue, 60); //# Take a task on input, put it on taken
-			if (taskName!=null) {
+			if (taskName != null) {
 				handleTask(taskName);
 				jedis.lpush(outputQueue, taskName); //# notify the scheduler the job is done
 				jedis.lrem(takenQueue, 1, taskName); //# Remove the task from taken

@@ -35,6 +35,7 @@ func main() {
 	}
 	defer con.Close()
 	log.Printf("Worker listening on queue %+v\n", INPUT_QUEUE)
+	log.Printf(" connected\n")
 	for {
 		task, _ := redis.String(con.Do("BRPOPLPUSH", INPUT_QUEUE, TAKEN_QUEUE, 60))
 		if task != "" {

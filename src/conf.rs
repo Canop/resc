@@ -22,7 +22,7 @@ trait JConv {
     fn get_l2_string(&self, c1: &str, c2: &str) -> RescResult<String>;
     fn as_fetcher(&self) -> RescResult<Fetcher>;
     fn as_rule(&self) -> RescResult<Rule>;
-    fn as_watcher(&self, redis_url: String, task_set: String) -> RescResult<Watcher>;
+    fn as_watcher(&self, redis_url: String, task_set: String, listener_channel: String) -> RescResult<Watcher>;
     fn as_conf(&self) -> RescResult<Conf>;
 }
 
@@ -93,7 +93,7 @@ impl JConv for Value {
         })
     }
 
-    fn as_watcher(&self, redis_url: String, task_set: String) -> RescResult<Watcher> {
+    fn as_watcher(&self, redis_url: String, task_set: String, listener_channel: String) -> RescResult<Watcher> {
         let input_queue = self.get_string("input_queue")?;
         let taken_queue = match &self["taken_queue"] {
             Value::String(s) => s.to_owned(),
@@ -111,6 +111,7 @@ impl JConv for Value {
         Ok(Watcher {
             redis_url,
             task_set,
+            listener_channel,
             input_queue,
             taken_queue,
             ruleset,
@@ -120,6 +121,7 @@ impl JConv for Value {
     fn as_conf(&self) -> RescResult<Conf> {
         let redis_url = self.get_l2_string("redis", "url")?;
         let task_set = self.get_string("task_set")?;
+        let listener_channel = self.get_string("listener_channel")?;
         let mut watchers = Vec::new();
 
         let watchers_value = match &self["watchers"] {
@@ -128,7 +130,10 @@ impl JConv for Value {
         };
 
         for watcher_value in watchers_value.iter() {
-            let watcher = watcher_value.as_watcher(redis_url.to_owned(), task_set.to_owned())?;
+            let watcher = watcher_value.as_watcher(
+                redis_url.to_owned(),
+                task_set.to_owned(),
+                listener_channel.to_owned())?;
             watchers.push(watcher);
         }
 

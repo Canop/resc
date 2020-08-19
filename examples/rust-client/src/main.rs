@@ -33,6 +33,15 @@ fn handle_task(task: &str) {
 fn main() {
     let client = redis::Client::open(REDIS_URL).unwrap();
     let con = client.get_connection().unwrap();
+    loop {
+        match con.rpoplpush::<_, String>(TAKEN_QUEUE, INPUT_QUEUE) {
+            Ok(task) => println!("recovered task {:?}", task),
+            Err(_) => {
+                println!("No more tasks to recover in queue {:?}", TAKEN_QUEUE);
+                break;
+            },
+        }
+    }
     println!("Worker listening on queue {:?}", INPUT_QUEUE);
     loop {
         //# Take a task on input, put it on taken

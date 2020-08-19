@@ -3,7 +3,7 @@
 
 This simple example shows
 
-* the resc scheduler generating tasks according to one of the simplest possible rules
+* the resc scheduler generating tasks according to one of the simplest possible rule
 * one or several java worker(s) picking up tasks, executing them, and signaling end of execution
 * one or several node.js worker(s) picking up tasks, executing them, and signaling end of execution
 * one or several rust worker(s) picking up tasks, executing them, and signaling end of execution

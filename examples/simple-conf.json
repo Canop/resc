@@ -3,6 +3,7 @@
 		"url": "redis://127.0.0.1/"
 	},
 	"task_set": "global/todo",
+	"listener_channel": "events",
 	"watchers": [
 		{
 			"input_queue": "global/done",
