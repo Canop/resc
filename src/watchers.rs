@@ -63,7 +63,7 @@ impl Watcher {
                             info!("  ->  {:?} pushed to queue {:?}", &r.task, &r.queue);
                             con.lpush::<_, _, i32>(&r.queue, &r.task)?;
                             con.zadd::<_, f64, _, i32>(&self.task_set, &r.task, now)?;
-                            devug!("      {:?} pushed to task_set {:?} @ {}", &r.task, &self.task_set, now);
+                            debug!("      {:?} pushed to task_set {:?} @ {}", &r.task, &self.task_set, now);
                             con.publish::<_,_,_>(&self.listener_channel, format!("{} TRIGGER {} -> {}", &self.taken_queue,  &done, &r.task))?;
                         }
                     }
