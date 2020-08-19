@@ -1,20 +1,19 @@
-use errors::RescResult;
-/// A Fetcher is responsible for synchronously fetching some data
-/// (for use in handling a rule)
-use log::*;
-use patterns::Pattern;
-use reqwest;
-use serde_json::{self, Value};
-use std::collections::HashMap;
-use std::io::Read;
+use {
+    crate::{errors::RescResult, patterns::Pattern},
+    log::*,
+    reqwest,
+    serde_json::{self, Value},
+    std::{collections::HashMap, io::Read},
+};
 
+/// the data the fetcher got
 #[derive(Debug)]
 pub struct FetchResult {
     pub props: HashMap<String, String>,
 }
 
-// will probably be an enum later, with various other
-//  strategies including graphql and direct DB queries
+/// A Fetcher is responsible for synchronously fetching some data
+/// (for use in handling a rule)
 #[derive(Debug)]
 pub struct Fetcher {
     pub url: Pattern,
@@ -49,7 +48,9 @@ impl Fetcher {
         info!("  querying url: {:#?}", url);
         let mut response = reqwest::get(&url)?;
         if !response.status().is_success() {
-            return Err(format!("     -> request answered an error : {}", response.status()).into());
+            return Err(
+                format!("     -> request answered an error : {}", response.status()).into(),
+            );
         }
         let mut json = String::new();
         response.read_to_string(&mut json)?;

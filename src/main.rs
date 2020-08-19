@@ -1,7 +1,14 @@
+//! Resc is a task orchestrator for distributed systems
+//! It's based on Rust and ensures in a safe way the
+//! generation of deduced tasks and their availability
+//! for external workers
+//!
+//! Introduction and complete description in the [README](https://github.com/Canop/resc)
+
+extern crate chrono;
 extern crate env_logger;
 extern crate lazy_static;
 extern crate log;
-extern crate chrono;
 extern crate redis;
 extern crate regex;
 extern crate reqwest;
@@ -14,11 +21,11 @@ mod patterns;
 mod rules;
 mod watchers;
 
-use log::*;
-use std::env;
-use std::thread;
-use std::io::Write;
-use chrono::Local;
+use {
+    chrono::Local,
+    log::*,
+    std::{env, io::Write, thread},
+};
 
 fn configure_logger() {
     let env = env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "warn");
@@ -26,11 +33,12 @@ fn configure_logger() {
     builder.default_format_module_path(false);
     // log format with millisecond for better understanding of concurrency issues
     builder.format(|buf, record| {
-        writeln!(buf,
-                 "{} [{}] - {}",
-                 Local::now().format("%Y-%m-%dT%H:%M:%S%.3f"),
-                 record.level(),
-                 record.args()
+        writeln!(
+            buf,
+            "{} [{}] - {}",
+            Local::now().format("%Y-%m-%dT%H:%M:%S%.3f"),
+            record.level(),
+            record.args()
         )
     });
     builder.init();

@@ -1,17 +1,19 @@
-use log::*;
-use regex::Regex;
-use std::collections::HashMap;
+use {
+    crate::{errors::RescResult, fetchers::Fetcher, patterns::Pattern},
+    log::*,
+    regex::Regex,
+    std::collections::HashMap,
+};
 
-use errors::RescResult;
-use fetchers::Fetcher;
-use patterns::Pattern;
-
+/// result of applying a rule to a task
 #[derive(Debug)]
 pub struct RuleResult {
     pub task: String,
     pub queue: String,
 }
 
+/// a rule, defined by a condition (the "on" pattern)
+/// and what to do with the matching tasks
 #[derive(Debug)]
 pub struct Rule {
     pub name: String,
@@ -19,6 +21,13 @@ pub struct Rule {
     pub fetchers: Vec<Fetcher>,
     pub make_task: Pattern,
     pub make_queue: Pattern,
+}
+
+/// all the rules of a watcher, that is the rules
+/// related to an input queue
+#[derive(Debug)]
+pub struct Ruleset {
+    pub rules: Vec<Rule>,
 }
 
 impl Rule {
@@ -31,7 +40,7 @@ impl Rule {
             queue: self.make_queue.inject(&props),
         }
     }
-    // Assuming the rule matches, computes the rule results
+    /// Assuming the rule matches, computes the rule results
     pub fn results(&self, task: &str) -> RescResult<Vec<RuleResult>> {
         let mut props: HashMap<String, String> = HashMap::new();
         props.insert("input_task".to_owned(), task.to_owned());
@@ -66,11 +75,6 @@ impl Rule {
         }
         Ok(results)
     }
-}
-
-#[derive(Debug)]
-pub struct Ruleset {
-    pub rules: Vec<Rule>,
 }
 
 impl Ruleset {

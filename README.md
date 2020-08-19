@@ -204,10 +204,10 @@ When `make/task` is omitted, the generated task is the same string as the input 
 
 # Development Status
 
-This is a very preliminary version, without any kind of guarantee.
+Resc is developped by [Fives KEODS](https://www.fivesgroup.com/).
 
-It's still a Work In Progress and submitted to GitHub for easier peer review.
+This is a very preliminary version, without any kind of guarantee and not yet considered industrial grade.
 
 # License
 
-*To be defined*
+MIT

@@ -1,16 +1,17 @@
-/// handle reading and parsing a JSON configuration file
-/// checking the consistency
-/// and building the Conf object.
-use regex::Regex;
-use serde_json::{self, Value};
-use std::fs;
+use {
+    crate::{
+        errors::RescResult,
+        fetchers::Fetcher,
+        patterns::Pattern,
+        rules::{Rule, Ruleset},
+        watchers::Watcher,
+    },
+    regex::Regex,
+    serde_json::{self, Value},
+    std::fs,
+};
 
-use errors::RescResult;
-use fetchers::Fetcher;
-use patterns::Pattern;
-use rules::{Rule, Ruleset};
-use watchers::Watcher;
-
+/// The configuration of Resc, as read from a JSON file
 #[derive(Debug)]
 pub struct Conf {
     pub watchers: Vec<Watcher>,
@@ -22,7 +23,12 @@ trait JConv {
     fn get_l2_string(&self, c1: &str, c2: &str) -> RescResult<String>;
     fn as_fetcher(&self) -> RescResult<Fetcher>;
     fn as_rule(&self) -> RescResult<Rule>;
-    fn as_watcher(&self, redis_url: String, task_set: String, listener_channel: String) -> RescResult<Watcher>;
+    fn as_watcher(
+        &self,
+        redis_url: String,
+        task_set: String,
+        listener_channel: String,
+    ) -> RescResult<Watcher>;
     fn as_conf(&self) -> RescResult<Conf>;
 }
 
@@ -93,7 +99,12 @@ impl JConv for Value {
         })
     }
 
-    fn as_watcher(&self, redis_url: String, task_set: String, listener_channel: String) -> RescResult<Watcher> {
+    fn as_watcher(
+        &self,
+        redis_url: String,
+        task_set: String,
+        listener_channel: String,
+    ) -> RescResult<Watcher> {
         let input_queue = self.get_string("input_queue")?;
         let taken_queue = match &self["taken_queue"] {
             Value::String(s) => s.to_owned(),
@@ -133,7 +144,8 @@ impl JConv for Value {
             let watcher = watcher_value.as_watcher(
                 redis_url.to_owned(),
                 task_set.to_owned(),
-                listener_channel.to_owned())?;
+                listener_channel.to_owned(),
+            )?;
             watchers.push(watcher);
         }
 
