@@ -44,7 +44,7 @@ impl Fetcher {
     }
 
     pub fn results(&self, props: &HashMap<String, String>) -> RescResult<Vec<FetchResult>> {
-        let url = self.url.inject(&props).to_string();
+        let url = self.url.inject(&props);
         info!("  querying url: {:#?}", url);
         let mut response = reqwest::get(&url)?;
         if !response.status().is_success() {

@@ -33,6 +33,8 @@ fn handle_task(task: &str) {
 fn main() {
     let client = redis::Client::open(REDIS_URL).unwrap();
     let con = client.get_connection().unwrap();
+    // at launch we recover the tasks remaining in the taken_queue
+    // and we move them to the list of tasks to do
     loop {
         match con.rpoplpush::<_, String>(TAKEN_QUEUE, INPUT_QUEUE) {
             Ok(task) => println!("recovered task {:?}", task),

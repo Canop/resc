@@ -18,6 +18,9 @@ pub struct Watcher {
 }
 
 impl Watcher {
+    /// move tasks from the taken queue to the input queue
+    /// This is done on start to reschedule the tasks that
+    /// weren't completely handled.
     fn empty_taken_queue(&self, con: &mut Connection) {
         debug!("watcher cleans its taken queue");
         let mut n = 0;
@@ -26,7 +29,7 @@ impl Watcher {
                 " moving {:?} from {:?} to {:?}",
                 &taken, &self.taken_queue, &self.input_queue
             );
-            n = n + 1;
+            n += 1;
         }
         if n > 0 {
             warn!(
@@ -36,6 +39,8 @@ impl Watcher {
         }
     }
 
+    /// continuously watch the input queue an apply rules on the events
+    /// it takes in the queue
     fn watch_input_queue(&self, con: &mut Connection) -> RescResult<()> {
         info!("watcher launched on queue {:?}...", &self.input_queue);
         while let Ok(done) = con.brpoplpush::<_, String>(&self.input_queue, &self.taken_queue, 0) {

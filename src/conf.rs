@@ -108,7 +108,7 @@ impl JConv for Value {
         let input_queue = self.get_string("input_queue")?;
         let taken_queue = match &self["taken_queue"] {
             Value::String(s) => s.to_owned(),
-            _ => format!("{}/taken", &input_queue).to_owned(),
+            _ => format!("{}/taken", &input_queue),
         };
         let mut ruleset = Ruleset { rules: Vec::new() };
         let rules_value = match &self["rules"] {

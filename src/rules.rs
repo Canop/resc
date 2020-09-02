@@ -63,7 +63,6 @@ impl Rule {
                     // we inject the parent properties
                     // This is heavy but makes the whole simpler
                     for (key, value) in &props {
-                        // is there a shortcut ?
                         fetch_result.props.insert(key.clone(), value.clone());
                     }
                     trace!(" merged: {:#?}", &fetch_result.props);
