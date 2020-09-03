@@ -4,6 +4,7 @@ version = "0.2.0"
 authors = ["Denys Séguret <denys.seguret@gmail.com>"]
 edition = "2018"
 description = "A Redis based task orchestrator"
+repository = "https://github.com/Canop/resc"
 license = "MIT"
 
 [dependencies]

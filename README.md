@@ -13,7 +13,7 @@ Resc is written in rust for safety and performance.
 
 # Workers
 
-Resc, as a scheduler, assumes workers handle taks in this very simple way:
+Resc, as a scheduler, assumes workers handle tasks in this very simple way:
 
 1. pick a task in a queue and atomically move it to a "taken" list : `BRPOPLPUSH myqueue/todo myqueue/taken 0`
 
@@ -85,7 +85,7 @@ Several variables are dynamically generated and valued:
 
 Those variables are used to extrapolate the task and queue of the todo part of the rule.
 
-The taks `"trt/123/456"` would then be created.
+The task `"trt/123/456"` would then be created.
 
 If the `"trt/123/todo-set"` set doesn't contain the task already, then it's added to that set (with the time which may be used for monitoring) then to the `"trt/123/todo-queue"` queue.
 
