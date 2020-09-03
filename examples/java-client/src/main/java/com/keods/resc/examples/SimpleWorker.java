@@ -1,7 +1,6 @@
 package com.keods.resc.examples;
 
 import redis.clients.jedis.Jedis;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,7 +12,8 @@ import java.util.concurrent.TimeUnit;
 public class SimpleWorker {
 
 	static String host = "localhost";
-	static String inputQueue = "trt/plantA/todo";
+	static String inputQueue = "trt/plantA/todo-queue";
+	static String inputSet = "trt/plantA/todo-set"; // set to null if not using a set
 	static String takenQueue = "trt/plantA/taken";
 	static String outputQueue = "global/done";
 
@@ -73,11 +73,25 @@ public class SimpleWorker {
 
 		System.out.println("Worker listening on queue " + inputQueue);
 		for (;;) {
-			String taskName = jedis.brpoplpush(inputQueue, takenQueue, 60); //# Take a task on input, put it on taken
+			//# Take a task on input, put it on taken
+			String taskName = jedis.brpoplpush(inputQueue, takenQueue, 60);
 			if (taskName != null) {
+				if (inputSet != null) {
+					//# remove the task from the task set
+					long n = jedis.zrem(inputSet, taskName);
+					if (n != 1) {
+						System.out.printf(
+							"Unexpected number of elements removed from set: %d\n",
+							n
+						);
+					}
+				}
+				//# do the job
 				handleTask(taskName);
-				jedis.lpush(outputQueue, taskName); //# notify the scheduler the job is done
-				jedis.lrem(takenQueue, 1, taskName); //# Remove the task from taken
+				//# notify the scheduler the job is done
+				jedis.lpush(outputQueue, taskName);
+				//# Remove the task from taken
+				jedis.lrem(takenQueue, 1, taskName);
 			} else {
 				System.out.println("I'm bored");
 			}

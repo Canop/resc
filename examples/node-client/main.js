@@ -2,7 +2,8 @@ const redis = require("redis")
 const Promise = require("bluebird")
 Promise.promisifyAll(redis)
 
-const inputQueue = "trt/plantA/todo"
+const inputQueue = "trt/plantA/todo-queue"
+const inputSet = "trt/plantA/todo-set" // set to null if not deduplicating
 const takenQueue = "trt/plantA/taken"
 const outputQueue = "global/done"
 
@@ -27,12 +28,23 @@ const client = redis.createClient()
 console.log(`Worker listening on queue ${inputQueue}`)
 ;(function loop(){
 	// the promisified version of brpoplpush doesn't seem to work, hence this awkward construct
-	client.brpoplpush(inputQueue, takenQueue, 60, async function(err, taskName){ //# Take a task on input, put it on taken
+	//# Take a task on input, put it on taken
+	client.brpoplpush(inputQueue, takenQueue, 60, async function(err, taskName){
 		if (taskName) {
 			try {
+				//# remove the task from the set
+				if (inputSet) {
+					await client.zremAsync(inputSet, taskName);
+				}
+
+				//# do the job
 				await handleTask(taskName)
-				await client.lpushAsync(outputQueue, taskName) //# notify the scheduler the job is done
-				await client.lremAsync(takenQueue, 1, taskName) //# Remove the task from taken
+
+				//# notify the scheduler the job is done
+				await client.lpushAsync(outputQueue, taskName)
+
+				//# Remove the task from taken
+				await client.lremAsync(takenQueue, 1, taskName)
 			} catch (e) {
 				console.warn("There was an error while pushing the task back:", e)
 			}

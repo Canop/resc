@@ -4,11 +4,9 @@
 This simple example shows
 
 * the resc scheduler generating tasks according to one of the simplest possible rule
-* one or several java worker(s) picking up tasks, executing them, and signaling end of execution
-* one or several node.js worker(s) picking up tasks, executing them, and signaling end of execution
-* one or several rust worker(s) picking up tasks, executing them, and signaling end of execution
+* one or several worker(s) picking up tasks, executing them, and signaling end of execution
 
-The node and java workers have exactly the same behavior;
+Java, Go, node, and Rust implementations of workers are available and can be used concurrently.
 
 The business logic here is that a source sends events informing us that some data has been received regarding a plant "plantA" and several products (the nature of this event is `"acq"`) and that we must execute some treatments.
 

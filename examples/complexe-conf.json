@@ -2,7 +2,6 @@
 	"redis": {
 		"url": "redis://127.0.0.1/"
 	},
-	"task_set": "global/todo",
 	"listener_channel": "events",
 	"watchers": [
 		{
@@ -14,7 +13,8 @@
 					"on": "^acq/(?P<process_id>\\w+)/(?P<product_id>\\d+)$",
 					"make": {
 						"task": "trt/${process_id}/${product_id}",
-						"queue": "trt/${process_id}/todo"
+						"queue": "trt/${process_id}/todo-queue",
+						"set": "trt/${process_id}/todo-set"
 					}
 				},
 				{

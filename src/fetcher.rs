@@ -1,5 +1,8 @@
 use {
-    crate::{errors::RescResult, patterns::Pattern},
+    crate::{
+        errors::RescResult,
+        pattern::Pattern,
+    },
     log::*,
     reqwest,
     serde_json::{self, Value},

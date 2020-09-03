@@ -5,7 +5,8 @@ use std::io::{self, Write};
 use std::time::Duration;
 
 const REDIS_URL: &str = "redis://127.0.0.1/";
-const INPUT_QUEUE: &str = "trt/plantA/todo";
+const INPUT_QUEUE: &str = "trt/plantA/todo-queue";
+const INPUT_SET: &str = "trt/plantA/todo-set";
 const TAKEN_QUEUE: &str = "trt/plantA/taken";
 const OUTPUT_QUEUE: &str = "global/done";
 const WAIT_BETWEEN_DOTS: Duration = Duration::from_secs(1);
@@ -48,6 +49,21 @@ fn main() {
     loop {
         //# Take a task on input, put it on taken
         if let Ok(task) = con.brpoplpush::<_, String>(INPUT_QUEUE, TAKEN_QUEUE, 60) {
+            //# removing the task from the task_set so that it can be pushed again
+            match con.zrem::<_, _, i32>(INPUT_SET, &task) {
+                Ok(1) => {
+                    println!("removed task from set");
+                }
+                Ok(0) => {
+                    println!("no task found in set - might be a bad configuration");
+                }
+                Ok(n) => {
+                    println!("unexpected {} tasks removed - bad configuration", n);
+                }
+                Err(err) => {
+                    println!("error while lpushing the task back : {:?}", err);
+                }
+            }
             handle_task(&task);
             //# notify the scheduler the job is done
             if let Err(err) = con.lpush::<_, _, ()>(OUTPUT_QUEUE, &task) {

@@ -1,10 +1,11 @@
 use {
     crate::{
         errors::RescResult,
-        fetchers::Fetcher,
-        patterns::Pattern,
-        rules::{Rule, Ruleset},
-        watchers::Watcher,
+        fetcher::Fetcher,
+        pattern::Pattern,
+        rule::Rule,
+        ruleset::Ruleset,
+        watcher::Watcher,
     },
     regex::Regex,
     serde_json::{self, Value},
@@ -26,7 +27,6 @@ trait JConv {
     fn as_watcher(
         &self,
         redis_url: String,
-        task_set: String,
         listener_channel: String,
     ) -> RescResult<Watcher>;
     fn as_conf(&self) -> RescResult<Conf>;
@@ -90,19 +90,27 @@ impl JConv for Value {
             _ => return Err("missing make/queue string in rule".into()),
         };
 
+        let make_set = match &self["make"]["set"] {
+            Value::String(src) => Some(Pattern {
+                src: src.to_owned(),
+            }),
+            Value::Null => None,
+            _ => return Err("invalid make/set in rule".into()),
+        };
+
         Ok(Rule {
             name,
             on_regex,
             fetchers,
             make_task,
             make_queue,
+            make_set,
         })
     }
 
     fn as_watcher(
         &self,
         redis_url: String,
-        task_set: String,
         listener_channel: String,
     ) -> RescResult<Watcher> {
         let input_queue = self.get_string("input_queue")?;
@@ -121,7 +129,6 @@ impl JConv for Value {
         }
         Ok(Watcher {
             redis_url,
-            task_set,
             listener_channel,
             input_queue,
             taken_queue,
@@ -131,7 +138,9 @@ impl JConv for Value {
 
     fn as_conf(&self) -> RescResult<Conf> {
         let redis_url = self.get_l2_string("redis", "url")?;
-        let task_set = self.get_string("task_set")?;
+        if let Value::String(s) = &self["task_set"] {
+            log::warn!("Ignoring {:?}:{:?} because global task_set isn't supported anymore", "task_set", s);
+        }
         let listener_channel = self.get_string("listener_channel")?;
         let mut watchers = Vec::new();
 
@@ -143,7 +152,6 @@ impl JConv for Value {
         for watcher_value in watchers_value.iter() {
             let watcher = watcher_value.as_watcher(
                 redis_url.to_owned(),
-                task_set.to_owned(),
                 listener_channel.to_owned(),
             )?;
             watchers.push(watcher);

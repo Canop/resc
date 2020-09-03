@@ -25,7 +25,13 @@ Resc, as a scheduler, assumes workers handle taks in this very simple way:
 
 This scheme ensures several workers can safely work on the same queue.
 
+You often want the queues to be free of duplicates.
+You may still want to queue tasks while they are being processed (for example you may want a recomputation because some new info arrived).
+
+If you want deduplicating of a task queue, you declare a task set in the configuration and the worker, just after having picked the task from the queue and before executing it, remove it from the set too.
+
 Java, Go, Rust and node.js implementations of workers are provided in the examples directory.
+They all show how to use (or not) the deduplicating queue.
 
 # Introductory Example
 
@@ -39,7 +45,6 @@ Here's a simple configuration file:
 		"redis": {
 			"url": "redis://127.0.0.1/"
 		},
-		"task_set": "global/todo",
 		"watchers": [
 			{
 				"input_queue": "global/done",
@@ -50,7 +55,8 @@ Here's a simple configuration file:
 						"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
 						"todo": {
 							"task": "trt/${process_id}/${product_id}",
-							"queue": "trt/${process_id}/todo",
+							"queue": "trt/${process_id}/todo-queue",
+							"set": "trt/${process_id}/todo-set"
 						}
 					}
 				]
@@ -79,9 +85,9 @@ Several variables are dynamically generated and valued:
 
 Those variables are used to extrapolate the task and queue of the todo part of the rule.
 
-The taks `"trt/123/456"` would then be created and pushed to the `"trt/123/todo"` queue, after having checked it's not in the sorted set `"global/todo"`.
+The taks `"trt/123/456"` would then be created.
 
-The task is also referenced in this sorted set with the timestamp as score.
+If the `"trt/123/todo-set"` set doesn't contain the task already, then it's added to that set (with the time which may be used for monitoring) then to the `"trt/123/todo-queue"` queue.
 
 After having executed all rules on this task, it's cleared from the `"global/taken"` queue and the watcher goes on watching the `"global/done"` queue again for other tasks.
 
@@ -127,13 +133,14 @@ Then the relevant rule could be like this:
 		}],
 		"todo": {
 			"task": "trt/${child.processId}/${child.productId}",
-			"queue": "trt/${child.processId}/todo",
+			"queue": "trt/${child.processId}/todo-queue",
+			"set": "trt/${child.processId}/todo-set",
 		}
 	}
 
 The `fetch` element describes the HTTP query and the namespace of the variables read in the web-service's response and used for generation of tasks, queues and sets.
 
-In our example, we'd end with two new tasks, `"trt/634876914/5ab7e7dc00000040"` (added to queue `"trt/634876914/todo"`), and `"trt/634876914/5ab7ebe800000040"` (added to queue `"trt/634876914/todo"`).
+In our example, we'd end with two new tasks, `"trt/634876914/5ab7e7dc00000040"` (added to queue `"trt/634876914/todo-queue"`), and `"trt/634876914/5ab7ebe800000040"` (added to queue `"trt/634876914/todo-queue"`).
 
 ## Switching queues, default configuration values
 
@@ -143,7 +150,7 @@ That's when you may want to have another watcher, and thread, handling those spe
 
 In order to do that, you want a rule just passing the task to another queue which another watcher watches.
 
-Let's call this new queue `global/to-propagate`. Of course you give your queues the names you want.
+Let's call this new queue `global/to-propagate` (you give your queues the names you want).
 
 The new configuration becomes
 
@@ -151,7 +158,6 @@ The new configuration becomes
 		"redis": {
 			"url": "redis://127.0.0.1/"
 		},
-		"task_set": "global/todo",
 		"watchers": [
 			{
 				"input_queue": "global/done",
@@ -162,7 +168,8 @@ The new configuration becomes
 						"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
 						"make": {
 							"task": "trt/${process_id}/${product_id}",
-							"queue": "trt/${process_id}/todo"
+							"queue": "trt/${process_id}/todo-queue",
+							"set": "trt/${process_id}/todo-set"
 						}
 					},
 					{
@@ -186,7 +193,8 @@ The new configuration becomes
 						}],
 						"make": {
 							"task": "trt/${child.processId}/${child.productId}",
-							"queue": "trt/${child.processId}/todo"
+							"queue": "trt/${child.processId}/todo-queue",
+							"set": "trt/${child.processId}/todo-set"
 						}
 					}
 				]
@@ -206,7 +214,7 @@ When `make/task` is omitted, the generated task is the same string as the input 
 
 Resc is developped by [Fives KEODS](https://www.fivesgroup.com/).
 
-This is a very preliminary version, without any kind of guarantee and not yet considered industrial grade.
+This is a preliminary version, without any kind of guarantee and not yet considered industrial grade.
 
 # License
 

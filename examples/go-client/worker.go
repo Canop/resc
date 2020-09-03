@@ -9,7 +9,8 @@ import (
 )
 
 const REDIS_URL = "redis://127.0.0.1"
-const INPUT_QUEUE = "trt/plantA/todo"
+const INPUT_QUEUE = "trt/plantA/todo-queue"
+const INPUT_SET = "trt/plantA/todo-set" // set to "" if you don't use a set for deduplicating
 const TAKEN_QUEUE = "trt/plantA/taken"
 const OUTPUT_QUEUE = "global/done"
 
@@ -39,6 +40,11 @@ func main() {
 	for {
 		task, _ := redis.String(con.Do("BRPOPLPUSH", INPUT_QUEUE, TAKEN_QUEUE, 60))
 		if task != "" {
+			if INPUT_SET != "" {
+				if _, err = con.Do("ZREM", INPUT_SET, task); err != nil {
+					log.Fatalf("Error in LPUSH: %v\n", err)
+				}
+			}
 			handleTask(task)
 			if _, err = con.Do("LPUSH", OUTPUT_QUEUE, task); err != nil {
 				log.Fatalf("Error in LPUSH: %v\n", err)

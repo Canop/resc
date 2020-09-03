@@ -1,5 +1,8 @@
 use {
-    crate::{errors::RescResult, rules::Ruleset},
+    crate::{
+        errors::RescResult,
+        ruleset::Ruleset,
+    },
     log::*,
     redis::{self, Commands, Connection},
     std::time::SystemTime,
@@ -10,7 +13,6 @@ use {
 #[derive(Debug)]
 pub struct Watcher {
     pub redis_url: String,        // same for all watchers
-    pub task_set: String,         // same for all watchers
     pub listener_channel: String, // same for all watchers
     pub input_queue: String,
     pub taken_queue: String,
@@ -19,6 +21,7 @@ pub struct Watcher {
 
 impl Watcher {
     /// move tasks from the taken queue to the input queue
+    ///
     /// This is done on start to reschedule the tasks that
     /// weren't completely handled.
     fn empty_taken_queue(&self, con: &mut Connection) {
@@ -53,13 +56,6 @@ impl Watcher {
                 "<- got {:?} in queue {:?} @ {}",
                 &done, &self.input_queue, now
             );
-            if let Ok(n) = con.zrem::<_, _, i32>(&self.task_set, &done) {
-                if n > 0 {
-                    debug!(" previously queued task {:?} end", &done);
-                } else {
-                    debug!(" external task {:?} end", &done);
-                }
-            }
             let matching_rules = self.ruleset.matching_rules(&done);
             debug!(" {} matching rule(s)", matching_rules.len());
             for r in &matching_rules {
@@ -67,20 +63,28 @@ impl Watcher {
                 match r.results(&done) {
                     Ok(results) => {
                         for r in &results {
-                            if let Ok(time) = con.zscore::<_, _, i32>(&self.task_set, &r.task) {
+                            // if the rule specifies a task_set, we check the task isn't
+                            // already present in the set
+                            let in_set_time = r.set.as_ref()
+                                .and_then(|s| con.zscore::<_, _, i32>(s, &r.task).ok());
+                            if let Some(time) = in_set_time {
                                 info!("  task {:?} already queued @ {}", &r.task, time);
                                 continue;
                             }
                             info!("  ->  {:?} pushed to queue {:?}", &r.task, &r.queue);
+                            if let Some(task_set) = r.set.as_ref() {
+                                // we push first to the task set, to avoid a race condition:
+                                // a worker not finding the task in the set
+                                con.zadd(task_set, &r.task, now)?;
+                                debug!(
+                                    "      {:?} pushed to task_set {:?} @ {}",
+                                    &r.task, task_set, now
+                                );
+                            }
                             con.lpush(&r.queue, &r.task)?;
-                            con.zadd(&self.task_set, &r.task, now)?;
-                            debug!(
-                                "      {:?} pushed to task_set {:?} @ {}",
-                                &r.task, &self.task_set, now
-                            );
                             con.publish(
                                 &self.listener_channel,
-                                format!("{} TRIGGER {} -> {}", &self.taken_queue, &done, &r.task,),
+                                format!("{} TRIGGER {} -> {}", &self.taken_queue, &done, &r.task),
                             )?;
                         }
                     }

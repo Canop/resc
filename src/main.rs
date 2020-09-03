@@ -16,10 +16,12 @@ extern crate serde_json;
 
 mod conf;
 mod errors;
-mod fetchers;
-mod patterns;
-mod rules;
-mod watchers;
+mod fetcher;
+mod pattern;
+mod rule;
+mod ruleset;
+mod rule_result;
+mod watcher;
 
 use {
     chrono::Local,
