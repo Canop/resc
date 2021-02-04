@@ -15,11 +15,12 @@ pub struct Watcher {
     pub redis_url: String,        // same for all watchers
     pub listener_channel: String, // same for all watchers
     pub input_queue: String,
-    pub taken_queue: String,
+    pub taken_queue: String, // can't be shared between watchers
     pub ruleset: Ruleset,
 }
 
 impl Watcher {
+
     /// move tasks from the taken queue to the input queue
     ///
     /// This is done on start to reschedule the tasks that
@@ -42,63 +43,75 @@ impl Watcher {
         }
     }
 
+    /// completely handle one event received on the input queue
+    fn handle_input_event(&self, con: &mut Connection, done: String) -> RescResult<()> {
+        let now = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let now = now as f64; // fine with a timestamp in seconds because < 2^51
+        info!(
+            "<- got {:?} in queue {:?} @ {}",
+            &done, &self.input_queue, now
+        );
+        let matching_rules = self.ruleset.matching_rules(&done);
+        debug!(" {} matching rule(s)", matching_rules.len());
+        for r in &matching_rules {
+            debug!(" applying rule {:?}", r.name);
+            match r.results(&done) {
+                Ok(results) => {
+                    for r in &results {
+                        // if the rule specifies a task_set, we check the task isn't
+                        // already present in the set
+                        let in_set_time: Option<i32> = r.set.as_ref()
+                            .and_then(|s| con.zscore(s, &r.task).ok());
+                        if let Some(time) = in_set_time {
+                            info!("  task {:?} already queued @ {}", &r.task, time);
+                            continue;
+                        }
+                        info!("  ->  {:?} pushed to queue {:?}", &r.task, &r.queue);
+                        if let Some(task_set) = r.set.as_ref() {
+                            // we push first to the task set, to avoid a race condition:
+                            // a worker not finding the task in the set
+                            con.zadd(task_set, &r.task, now)?;
+                            debug!(
+                                "      {:?} pushed to task_set {:?} @ {}",
+                                &r.task, task_set, now
+                            );
+                        }
+                        con.lpush(&r.queue, &r.task)?;
+                        con.publish(
+                            &self.listener_channel,
+                            format!("{} TRIGGER {} -> {}", &self.taken_queue, &done, &r.task),
+                        )?;
+                    }
+                }
+                Err(err) => error!("  Rule execution failed: {:?}", err),
+            }
+        }
+        con.lrem(&self.taken_queue, 1, &done)?;
+        con.publish(
+            &self.listener_channel,
+            format!("{} DONE {}", &self.taken_queue, &done),
+        )?;
+        debug!(" done with task {:?}", &done);
+        Ok(())
+    }
+
     /// continuously watch the input queue an apply rules on the events
     /// it takes in the queue
     fn watch_input_queue(&self, con: &mut Connection) -> RescResult<()> {
         info!("watcher launched on queue {:?}...", &self.input_queue);
-        while let Ok(done) = con.brpoplpush::<_, String>(&self.input_queue, &self.taken_queue, 0) {
-            let now = SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
-            let now = now as f64; // fine with a timestamp in seconds because < 2^51
-            info!(
-                "<- got {:?} in queue {:?} @ {}",
-                &done, &self.input_queue, now
-            );
-            let matching_rules = self.ruleset.matching_rules(&done);
-            debug!(" {} matching rule(s)", matching_rules.len());
-            for r in &matching_rules {
-                debug!(" applying rule {:?}", r.name);
-                match r.results(&done) {
-                    Ok(results) => {
-                        for r in &results {
-                            // if the rule specifies a task_set, we check the task isn't
-                            // already present in the set
-                            let in_set_time = r.set.as_ref()
-                                .and_then(|s| con.zscore::<_, _, i32>(s, &r.task).ok());
-                            if let Some(time) = in_set_time {
-                                info!("  task {:?} already queued @ {}", &r.task, time);
-                                continue;
-                            }
-                            info!("  ->  {:?} pushed to queue {:?}", &r.task, &r.queue);
-                            if let Some(task_set) = r.set.as_ref() {
-                                // we push first to the task set, to avoid a race condition:
-                                // a worker not finding the task in the set
-                                con.zadd(task_set, &r.task, now)?;
-                                debug!(
-                                    "      {:?} pushed to task_set {:?} @ {}",
-                                    &r.task, task_set, now
-                                );
-                            }
-                            con.lpush(&r.queue, &r.task)?;
-                            con.publish(
-                                &self.listener_channel,
-                                format!("{} TRIGGER {} -> {}", &self.taken_queue, &done, &r.task),
-                            )?;
-                        }
-                    }
-                    Err(err) => error!("  Rule execution failed: {:?}", err),
+        loop {
+            match con.brpoplpush(&self.input_queue, &self.taken_queue, 0) {
+                Ok(done) => {
+                    self.handle_input_event(con, done)?
+                }
+                Err(e) => {
+                    error!("BRPOPLPUSH on {:?} failed : {}", &self.input_queue, e);
                 }
             }
-            con.lrem(&self.taken_queue, 1, &done)?;
-            con.publish(
-                &self.listener_channel,
-                format!("{} DONE {}", &self.taken_queue, &done),
-            )?;
-            debug!(" done with task {:?}", &done);
         }
-        unreachable!();
     }
 
     pub fn run(&self) {

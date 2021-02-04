@@ -11,6 +11,60 @@ It achieves this in a safe and monitorable way and takes care, for example, of a
 
 Resc is written in rust for safety and performance.
 
+# How it generally works
+
+## Queues setup
+
+Queues are defined by the resc configuration file. Here's we'll have a very simple setup.
+
+We won't show how tasks are deduplicated, logged, or published for supervision.
+
+### Some Event Generator pushes an event to the "global/done" input queue
+
+![lpush event](doc/flow-01-lpush-event.png)
+
+Instead of just a "global" queue, there could be several input queues but one is often enough even with hundreds of event sources.
+
+### Resc takes the event
+
+![brpoplpush event](doc/flow-02-brpoplpush-event.png)
+
+`brpoplpush` is an atomic operation, the event is guaranteed to not be lost: it's either in global/done or in global/taken.
+
+### Resc applies its rules to generate zero or more tasks
+
+
+![lpush task](doc/flow-03-lpush-task.png)
+
+
+### Resc removes the event from global/taken
+
+![lrem event](doc/flow-04-lrem-event.png)
+
+It was kept here so that the rules could be played again on restore in case of crash during rules computation (some rules may imply calling a server).
+
+
+### A worker takes the task
+
+![brpoplpush task](doc/flow-05-brpoplpush-task.png)
+
+Once again, `brpoplpush` is an atomic operation, the worker may die during effort, knowing the task won't be lost
+
+### When the job is done, the worker notifies it with an event
+
+![lpush done](doc/flow-06-lpush-done.png)
+
+
+### ... then removes the task from its taken queue
+
+![lrem task](doc/flow-07-lrem-task.png)
+
+## ... and it goes on
+
+Resc will now apply its rules to the `done-1` event, which may lead to new tasks, or maybe there's nothing more to do.
+
+Of course everything can happen with thousands of events, tasks and even workers.
+
 # Workers
 
 Resc, as a scheduler, assumes workers handle tasks in this very simple way:

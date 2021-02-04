@@ -1,7 +1,9 @@
 [package]
 name = "rust-client"
 version = "0.1.0"
+edition = "2018"
 authors = ["Denys Séguret <denys.seguret@gmail.com>"]
+license = "MIT"
 
 [dependencies]
-redis = "0.9.1"
+redis = "0.17"

@@ -1,8 +1,14 @@
-extern crate redis;
+use {
+    redis::Commands,
+    std::{
+        io::{self, Write},
+        time::Duration,
+    },
+};
 
-use redis::Commands;
-use std::io::{self, Write};
-use std::time::Duration;
+/// emptying the taken queue should only be done when there's only
+/// one worker on that queue, or on command, after a crash
+const EMPTY_TAKEN_AT_LAUNCH = true;
 
 const REDIS_URL: &str = "redis://127.0.0.1/";
 const INPUT_QUEUE: &str = "trt/plantA/todo-queue";
@@ -33,7 +39,7 @@ fn handle_task(task: &str) {
 
 fn main() {
     let client = redis::Client::open(REDIS_URL).unwrap();
-    let con = client.get_connection().unwrap();
+    let mut con = client.get_connection().unwrap();
     // at launch we recover the tasks remaining in the taken_queue
     // and we move them to the list of tasks to do
     loop {
@@ -64,6 +70,7 @@ fn main() {
                     println!("error while lpushing the task back : {:?}", err);
                 }
             }
+            //# do the real job
             handle_task(&task);
             //# notify the scheduler the job is done
             if let Err(err) = con.lpush::<_, _, ()>(OUTPUT_QUEUE, &task) {
