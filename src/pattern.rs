@@ -7,6 +7,7 @@ use {
 
 /// Patterns are built from strings like "bla ${some_var} ${some.otherone} bla"
 /// and are expanded with HashMap<String, String>
+/// TODO use an enum, and define an identity for the simple case
 #[derive(Debug, Clone)]
 pub struct Pattern {
     pub src: String,
@@ -25,6 +26,10 @@ impl Pattern {
                 }
             })
             .to_string()
+    }
+    /// produce the pattern to use when the config gives none
+    pub fn default_task() -> Self {
+        Self { src: "${input_task}".to_owned() }
     }
 }
 

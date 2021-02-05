@@ -12,17 +12,19 @@ The business logic here is that a source sends events informing us that some dat
 
 The scheduler rule here is just
 
-			"rules": [
-				{
-					"name": "TRT computation on data acquisition",
-					"on": "^acq/(?P<process_id>\\w+)/(?P<product_id>\\w+)$",
-					"make": {
-						"task": "trt/${process_id}/${product_id}",
-						"queue": "trt/${process_id}/todo"
-					}
-				}
-			]
-*[simple-conf.json](simple-conf.json)*
+	rules: [
+		{
+			name: TRT computation on data acquisition
+			on: "^acq/(?P<process_id>\\w+)/(?P<product_id>\\w+)$"
+			make: {
+				task: "trt/${process_id}/${product_id}"
+				queue: "trt/${process_id}/todo-queue"
+				set: "trt/${process_id}/todo-set"
+			}
+		}
+	]
+
+*[simple-conf.hjson](simple-conf.hjson)*
 
 
 So we'll manually generate events like `"acq/plantA/123"` and observe the scheduler generate tasks like `"trt/plantA/123"`, and then the worker(s) handle those tasks.
@@ -96,7 +98,7 @@ which removes everything.
 With the normal log setting, only errors and warning are displayed.
 If you want to see something, you should set the log level to "debug" or at least "info". In the examples directory, do
 
-	RUST_LOG=debug target/release/resc examples/simple-conf.json
+	RUST_LOG=debug target/release/resc examples/simple-conf.hjson
 
 ### Starting workers
 

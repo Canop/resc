@@ -11,7 +11,7 @@ use {
 #[derive(Debug, Deserialize)]
 pub struct WatcherConf {
     pub input_queue: String,
-    pub taken_queue: String, // can't be shared between watchers
+    pub taken_queue: Option<String>,
     pub rules: Vec<Rule>,
 }
 
@@ -33,7 +33,10 @@ impl Watcher {
     ) -> Result<Self, RescError> {
         let listener_channel = global_conf.listener_channel.clone();
         let input_queue = watcher_conf.input_queue.clone();
-        let taken_queue = watcher_conf.taken_queue.clone();
+        let taken_queue = match watcher_conf.taken_queue.as_ref() {
+            Some(queue) => queue.clone(),
+            None => format!("{}/taken", &input_queue),
+        };
         let ruleset = Ruleset {
             rules: watcher_conf.rules.clone(),
         };

@@ -12,21 +12,25 @@ use {
 /// Formats usable for reading configuration files
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum SerdeFormat {
+    Hjson,
     Json,
 }
 
 pub static FORMATS: &[SerdeFormat] = &[
+    SerdeFormat::Hjson,
     SerdeFormat::Json,
 ];
 
 impl SerdeFormat {
     pub fn key(self) -> &'static str {
         match self {
+            Self::Hjson => "hjson",
             Self::Json => "json",
         }
     }
     pub fn from_key(key: &str) -> Option<Self> {
         match key {
+            "hjson" => Some(SerdeFormat::Hjson),
             "json" => Some(SerdeFormat::Json),
             _ => None,
         }
@@ -43,6 +47,10 @@ impl SerdeFormat {
     {
         let format = Self::from_path(&path)?;
         match format {
+            Self::Hjson => {
+                let file_content = fs::read_to_string(&path)?;
+                Ok(deser_hjson::from_str(&file_content)?)
+            }
             Self::Json => {
                 Ok(serde_json::from_reader(fs::File::open(path)?)?)
             }

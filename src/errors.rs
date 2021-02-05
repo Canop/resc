@@ -26,6 +26,8 @@ pub enum ConfError {
     #[error("io error")]
     IO(#[from] std::io::Error),
 
+    #[error("invalid Hjson")]
+    Hjson(#[from] deser_hjson::Error),
 
     #[error("invalid JSON")]
     JSON(#[from] serde_json::Error),

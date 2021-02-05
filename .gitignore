@@ -8,3 +8,4 @@ node_modules
 examples/go-client/go-client
 examples/java-client/build
 examples/java-client/.gradle
+trav

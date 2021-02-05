@@ -1,0 +1,30 @@
+# This very simple example illustrates the propagation from
+# events (called "acq", as in "acquisition")
+# to tasks (called "trt" as in "treatment")
+{
+
+	redis: {
+		url: "redis://127.0.0.1/"
+	}
+
+	# This optional channel is here for observability
+	listener_channel: "events"
+
+	watchers: [
+		{
+			input_queue: global/done
+			taken_queue: global/taken
+			rules: [
+				{
+					name: TRT computation on data acquisition
+					on: "^acq/(?P<process_id>\\w+)/(?P<product_id>\\w+)$"
+					make: {
+						task: "trt/${process_id}/${product_id}"
+						queue: "trt/${process_id}/todo-queue"
+						set: "trt/${process_id}/todo-set"
+					}
+				}
+			]
+		}
+	]
+}

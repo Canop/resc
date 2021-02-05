@@ -389,6 +389,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "deser-hjson"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe0bd3d7d417d64ee4c1a70e3d8914069c29d6d1b7feb2d30c6140304f604a28"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "dtoa"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1444,6 +1453,7 @@ version = "0.3.0-dev"
 dependencies = [
  "anyhow",
  "chrono",
+ "deser-hjson",
  "env_logger",
  "lazy_static",
  "log",

@@ -14,6 +14,7 @@ pub struct Maker {
 
     /// the output task generation pattern, defined with token
     /// found with on_regex or a fetcher
+    #[serde(default = "Pattern::default_task")]
     pub task: Pattern,
 
     /// the queue where the generated tasks must be written

@@ -15,7 +15,8 @@ Resc is written in rust for safety and performance.
 
 ## Queues setup
 
-Queues are defined by the resc configuration file.
+Queues are defined by the resc configuration file, which can be in [JSON](https://json.org) or [Hjson](https://hjson.github.io/).
+
 Here we'll have a very simple setup, with only 4 Redis queues and only one type of tasks (the "tasks-A") and two workers ready to do them.
 
 We won't show how tasks are deduplicated, logged, or published for supervision.
@@ -94,24 +95,24 @@ The complete instructions on executing this example, and a business logic explan
 
 ## Simple regex based task generation
 
-Here's a simple configuration file:
+Here's a simple Hjson configuration file:
 
 	{
-		"redis": {
-			"url": "redis://127.0.0.1/"
-		},
-		"watchers": [
+		redis: {
+			url: "redis://127.0.0.1/"
+		}
+		watchers: [
 			{
-				"input_queue": "global/done",
-				"taken_queue": "global/taken",
-				"rules": [
+				input_queue: global/done
+				taken_queue: global/taken
+				rules: [
 					{
-						"name": "TRT computation on data acquisition",
-						"on": "^acq/(?P<process_id>\\d+)/(?P<product_id>\\d+)$",
-						"todo": {
-							"task": "trt/${process_id}/${product_id}",
-							"queue": "trt/${process_id}/todo-queue",
-							"set": "trt/${process_id}/todo-set"
+						name: TRT computation on data acquisition
+						on: "^acq/(?P<process_id>\\w+)/(?P<product_id>\\w+)$"
+						make: {
+							task: "trt/${process_id}/${product_id}"
+							queue: "trt/${process_id}/todo-queue"
+							set: "trt/${process_id}/todo-set"
 						}
 					}
 				]
@@ -121,11 +122,7 @@ Here's a simple configuration file:
 
 Resc can be launched with this configuration using
 
-	resc myconf.json
-
-or (during development)
-
-	cargo run -- myconf.json
+	resc myconf.hjson
 
 Resc starts a watcher, a thread, over the specified `input_queue`.
 
@@ -152,11 +149,11 @@ You don't usually want a lot of log, that's why the default log includes only wa
 
 You can see more by setting the log level to `INFO`:
 
-	RUST_LOG="info" resc myconf.json
+	RUST_LOG="info" resc myconf.hjson
 
 or if you want to see what rules were activated:
 
-	RUST_LOG="debug" resc myconf.json
+	RUST_LOG="debug" resc myconf.hjson
 
 ## Fetching some data to compute new tasks
 
