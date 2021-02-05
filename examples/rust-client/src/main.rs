@@ -8,7 +8,7 @@ use {
 
 /// emptying the taken queue should only be done when there's only
 /// one worker on that queue, or on command, after a crash
-const EMPTY_TAKEN_AT_LAUNCH = true;
+const EMPTY_TAKEN_AT_LAUNCH: bool = true;
 
 const REDIS_URL: &str = "redis://127.0.0.1/";
 const INPUT_QUEUE: &str = "trt/plantA/todo-queue";
@@ -40,15 +40,17 @@ fn handle_task(task: &str) {
 fn main() {
     let client = redis::Client::open(REDIS_URL).unwrap();
     let mut con = client.get_connection().unwrap();
-    // at launch we recover the tasks remaining in the taken_queue
-    // and we move them to the list of tasks to do
-    loop {
-        match con.rpoplpush::<_, String>(TAKEN_QUEUE, INPUT_QUEUE) {
-            Ok(task) => println!("recovered task {:?}", task),
-            Err(_) => {
-                println!("No more tasks to recover in queue {:?}", TAKEN_QUEUE);
-                break;
-            },
+    if EMPTY_TAKEN_AT_LAUNCH {
+        // at launch we recover the tasks remaining in the taken_queue
+        // and we move them to the list of tasks to do
+        loop {
+            match con.rpoplpush::<_, String>(TAKEN_QUEUE, INPUT_QUEUE) {
+                Ok(task) => println!("recovered task {:?}", task),
+                Err(_) => {
+                    println!("No more tasks to recover in queue {:?}", TAKEN_QUEUE);
+                    break;
+                },
+            }
         }
     }
     println!("Worker listening on queue {:?}", INPUT_QUEUE);

@@ -1,12 +1,13 @@
 use {
     lazy_static::lazy_static,
     regex::{Captures, Regex},
+    serde::{Deserialize, Deserializer},
     std::collections::HashMap,
 };
 
 /// Patterns are built from strings like "bla ${some_var} ${some.otherone} bla"
 /// and are expanded with HashMap<String, String>
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pattern {
     pub src: String,
 }
@@ -24,5 +25,14 @@ impl Pattern {
                 }
             })
             .to_string()
+    }
+}
+
+impl<'de> Deserialize<'de> for Pattern {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+        let src = String::deserialize(deserializer)?;
+        Ok(Self { src })
     }
 }

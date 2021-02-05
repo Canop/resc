@@ -1,60 +1,51 @@
 use {
-    crate::{
-        errors::RescResult,
-        fetcher::Fetcher,
-        pattern::Pattern,
-        rule_result::RuleResult,
-    },
+    crate::*,
     log::*,
     regex::Regex,
+    serde::Deserialize,
     std::collections::HashMap,
 };
 
+
 /// a rule, defined by a condition (the "on" pattern)
 /// and what to do with the matching tasks
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Rule {
 
     /// the name, unused for now, but having it in the JSON
     /// file helps making it clearer and it could be used in
     /// logging in the future, so it's mandatory
+    #[serde(default = "Rule::default_name")]
     pub name: String,
 
     /// the input task parser. It checks the rule applies to
     /// the task and it extracts the token which will be used
     /// to generate the output task
+    #[serde(with = "serde_regex", alias = "on")]
     pub on_regex: Regex,
 
     /// The optional fetchers which may query some additional
     /// token for generation of the output task
+    #[serde(default, alias = "fetch")]
     pub fetchers: Vec<Fetcher>,
 
-    /// the output task generation pattern, defined with token
-    /// found with on_regex or a fetcher
-    pub make_task: Pattern,
-
-    /// the queue where the generated tasks must be written
-    pub make_queue: Pattern,
-
-    /// the optional task set used for deduplicating
-    pub make_set: Option<Pattern>,
+    /// The recipe for building the output tasks when the rule
+    /// is verified and the fetchers did their job
+    #[serde(alias = "make")]
+    pub makers: Makers,
 
 }
 
 impl Rule {
+    pub fn default_name() -> String {
+        "<anonymous rule>".into()
+    }
     pub fn is_match(&self, task: &str) -> bool {
         self.on_regex.is_match(task)
     }
-    fn result(&self, props: &HashMap<String, String>) -> RuleResult {
-        RuleResult {
-            task: self.make_task.inject(&props),
-            queue: self.make_queue.inject(&props),
-            set: self.make_set.as_ref().map(|pattern| pattern.inject(&props)),
-        }
-    }
     /// Assuming the rule matches, computes the rule results
     /// (there's only one RuleResult when no fetcher is involved)
-    pub fn results(&self, task: &str) -> RescResult<Vec<RuleResult>> {
+    pub fn results(&self, task: &str) -> Result<Vec<RuleResult>, RescError> {
         // props will contain the token usable for generating
         // the task name, output queue and output set
         let mut props: HashMap<String, String> = HashMap::new();
@@ -81,11 +72,11 @@ impl Rule {
                         fetch_result.props.insert(key.clone(), value.clone());
                     }
                     trace!(" merged: {:#?}", &fetch_result.props);
-                    results.push(self.result(&fetch_result.props));
+                    self.makers.make(&fetch_result.props, &mut results);
                 }
             }
         } else {
-            results.push(self.result(&props));
+            self.makers.make(&props, &mut results);
         }
         Ok(results)
     }

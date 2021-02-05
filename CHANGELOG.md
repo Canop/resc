@@ -1,4 +1,5 @@
-
+### next
+It's now possible to declare several `make` elements in a rule.
 
 <a name="v0.2.0"></a>
 ### v0.2.0 - 2020-09-03

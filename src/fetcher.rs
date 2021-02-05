@@ -1,10 +1,8 @@
 use {
-    crate::{
-        errors::RescResult,
-        pattern::Pattern,
-    },
+    crate::*,
     log::*,
     reqwest,
+    serde::Deserialize,
     serde_json::{self, Value},
     std::{collections::HashMap, io::Read},
 };
@@ -17,7 +15,7 @@ pub struct FetchResult {
 
 /// A Fetcher is responsible for synchronously fetching some data
 /// (for use in handling a rule)
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Fetcher {
     pub url: Pattern,
     pub returns: String,
@@ -46,15 +44,14 @@ impl Fetcher {
         FetchResult { props }
     }
 
-    pub fn results(&self, props: &HashMap<String, String>) -> RescResult<Vec<FetchResult>> {
+    pub fn results(&self, props: &HashMap<String, String>) -> Result<Vec<FetchResult>, FetchError> {
         let url = self.url.inject(&props);
         info!("  querying url: {:#?}", url);
         let mut response = reqwest::get(&url)?;
         if !response.status().is_success() {
-            return Err(
-                format!("     -> request answered an error : {}", response.status()).into(),
-            );
+            return Err(FetchError::ErrorStatus(response.status().into()));
         }
+        // TODO use derive for response deserialization
         let mut json = String::new();
         response.read_to_string(&mut json)?;
         let mut results = Vec::new();
@@ -67,14 +64,18 @@ impl Fetcher {
                         Value::Object(object_value) => {
                             results.push(self.get_fetch_result(object_value));
                         }
-                        _ => return Err("unexpected json value type".into()),
+                        _ => {
+                            return Err(FetchError::UnexpectedContent);
+                        }
                     }
                 }
             }
             Value::Object(returned_value) => {
                 results.push(self.get_fetch_result(&returned_value));
             }
-            _ => return Err("unexpected content".into()),
+            _ => {
+                return Err(FetchError::UnexpectedContent);
+            }
         }
         Ok(results)
     }

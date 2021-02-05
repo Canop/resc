@@ -15,7 +15,8 @@ Resc is written in rust for safety and performance.
 
 ## Queues setup
 
-Queues are defined by the resc configuration file. Here's we'll have a very simple setup.
+Queues are defined by the resc configuration file.
+Here we'll have a very simple setup, with only 4 Redis queues and only one type of tasks (the "tasks-A") and two workers ready to do them.
 
 We won't show how tasks are deduplicated, logged, or published for supervision.
 
