@@ -5,7 +5,6 @@ use {
         fs,
         path::Path,
     },
-    serde_json,
 };
 
 
@@ -49,7 +48,11 @@ impl SerdeFormat {
         match format {
             Self::Hjson => {
                 let file_content = fs::read_to_string(&path)?;
-                Ok(deser_hjson::from_str(&file_content)?)
+                let conf = deser_hjson::from_str(&file_content);
+                if let Err(e) = &conf {
+                    warn!("Error while deserializing conf: {:#?}", e);
+                }
+                Ok(conf?)
             }
             Self::Json => {
                 Ok(serde_json::from_reader(fs::File::open(path)?)?)

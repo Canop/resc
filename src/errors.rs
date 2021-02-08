@@ -20,16 +20,16 @@ pub enum RescError {
 #[derive(Error, Debug)]
 pub enum ConfError {
 
-    #[error("unknow file extension: {0:?}")]
+    #[error("Unknow file extension: {0:?}")]
     UnknownFileExtension(String),
 
-    #[error("io error")]
+    #[error("IO error: {0}")]
     IO(#[from] std::io::Error),
 
-    #[error("invalid Hjson")]
+    #[error("Invalid Hjson: {0}")]
     Hjson(#[from] deser_hjson::Error),
 
-    #[error("invalid JSON")]
+    #[error("Invalid JSON: {0}")]
     JSON(#[from] serde_json::Error),
 }
 

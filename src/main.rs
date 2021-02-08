@@ -52,7 +52,7 @@ fn configure_logger() {
     builder.init();
 }
 
-fn main() -> Result<(), RescError> {
+fn main() {
     configure_logger();
 
     info!("----- starting resc scheduler -----");
@@ -62,12 +62,19 @@ fn main() -> Result<(), RescError> {
         panic!("no configuration file provided");
     }
     let config_filename = &args[1];
-    let conf = conf::read_file(&config_filename)?;
     info!("configuration read from {}", &config_filename);
+    let conf = match conf::read_file(&config_filename) {
+        Ok(conf) => conf,
+        Err(e) => {
+            error!("Error reading configuration: {}", &e);
+            eprintln!("{}", e);
+            return;
+        }
+    };
 
     let mut handles = Vec::new();
     for watcher_conf in &conf.watchers {
-        let mut watcher = Watcher::new(watcher_conf, &conf)?;
+        let mut watcher = Watcher::new(watcher_conf, &conf).unwrap();
         handles.push(thread::spawn(move || {
             watcher.run().unwrap();
         }));
@@ -78,5 +85,4 @@ fn main() -> Result<(), RescError> {
     for h in handles {
         h.join().unwrap();
     }
-    Ok(())
 }
