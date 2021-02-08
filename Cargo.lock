@@ -1449,7 +1449,7 @@ dependencies = [
 
 [[package]]
 name = "resc"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "chrono",
