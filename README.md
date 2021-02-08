@@ -1,9 +1,18 @@
+[![MIT][s2]][l2] [![Latest Version][s1]][l1]
+
+[s1]: https://img.shields.io/crates/v/resc.svg
+[l1]: https://crates.io/crates/resc
+
+[s2]: https://img.shields.io/badge/license-MIT-blue.svg
+[l2]: LICENSE
 
 # Purpose
 
 Redis lists are wonderful as task queues for distributed workers. A worker can safely and atomically take a task, even when several ones watch the same queue.
 
 **Resc** is a reliable and configurable task generator for redis.
+
+Rules and Redis queues are defined in a configuration file, which can be in [JSON](https://json.org) or [Hjson](https://hjson.github.io/).
 
 It watches one or several queues for events, which can be task completion notifications or simple "root" events, and applies rules to generate tasks.
 
@@ -14,8 +23,6 @@ Resc is written in rust for safety and performance.
 # How it generally works
 
 ## Queues setup
-
-Queues are defined by the resc configuration file, which can be in [JSON](https://json.org) or [Hjson](https://hjson.github.io/).
 
 Here we'll have a very simple setup, with only 4 Redis queues and only one type of tasks (the "tasks-A") and two workers ready to do them.
 
@@ -177,16 +184,16 @@ and for each of those products you want to generate a new task.
 Then the relevant rule could be like this:
 
 	{
-		"name": "TRT propagation to children",
-		"on": "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$",
-		"fetch": [{
-			"url": "http://my-web-service/products/${product_id}/direct-children",
-			"returns": "child"
-		}],
-		"todo": {
-			"task": "trt/${child.processId}/${child.productId}",
-			"queue": "trt/${child.processId}/todo-queue",
-			"set": "trt/${child.processId}/todo-set",
+		name: TRT propagation to children
+		on: "^trt/(?P<process_id>\\d+)/(?P<product_id>\\w{16})$"
+		fetch: [{
+			url: "http://my-web-service/products/${product_id}/direct-children"
+			returns: child
+		}]
+		todo: {
+			task: "trt/${child.processId}/${child.productId}"
+			queue: "trt/${child.processId}/todo-queue"
+			set: "trt/${child.processId}/todo-set"
 		}
 	}
 
