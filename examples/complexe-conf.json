@@ -5,7 +5,7 @@
 	"listener_channel": "events",
 	"watchers": [
 		{
-			"input_queue": "global/done",
+			"input_queue": "global/events",
 			"taken_queue": "global/taken",
 			"rules": [
 				{

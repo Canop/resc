@@ -130,13 +130,13 @@ Whatever the worker you launch, you should see
 
 In the redis cli do
 
-	lpush global/done acq/plantA/1 acq/plantA/2 acq/plantA/3
+	lpush global/events acq/plantA/1 acq/plantA/2 acq/plantA/3
 
 You should then see the scheduler immediately generating the 3 resulting tasks:
 
 ![generated tasks](doc/simple-example-generated-tasks.png)
 
-The workers pick tasks, execute them, and then send back the tasks as done in `global/done`.
+The workers pick tasks, execute them, and then send back the tasks as done in `global/events`.
 
 Here's what your screen should look like:
 

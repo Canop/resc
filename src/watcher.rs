@@ -80,18 +80,18 @@ impl Watcher {
     }
 
     /// completely handle one event received on the input queue
-    fn handle_input_event(&mut self, done: String) -> Result<(), RescError> {
+    fn handle_input_event(&mut self, event: String) -> Result<(), RescError> {
         let now = now_secs();
         info!(
             "<- got {:?} in queue {:?} @ {}",
-            &done, &self.input_queue, now
+            &event, &self.input_queue, now
         );
 
         // we first compute all the rule results
         let mut results = Vec::new();
-        for rule in self.ruleset.matching_rules(&done) {
+        for rule in self.ruleset.matching_rules(&event) {
             debug!(" applying rule {:?}", rule.name);
-            match rule.results(&done) {
+            match rule.results(&event) {
                 Ok(mut rule_results) => {
                     results.append(&mut rule_results);
                 }
@@ -128,17 +128,17 @@ impl Watcher {
             self.con.lpush(&r.queue, &r.task)?;
             self.con.publish(
                 &self.listener_channel,
-                format!("{} TRIGGER {} -> {}", &self.taken_queue, &done, &r.task),
+                format!("{} TRIGGER {} -> {}", &self.taken_queue, &event, &r.task),
             )?;
         }
 
         // the event can now be removed from the taken queue
-        self.con.lrem(&self.taken_queue, 1, &done)?;
+        self.con.lrem(&self.taken_queue, 1, &event)?;
         self.con.publish(
             &self.listener_channel,
-            format!("{} DONE {}", &self.taken_queue, &done),
+            format!("{} DONE {}", &self.taken_queue, &event),
         )?;
-        debug!(" done with task {:?}", &done);
+        debug!(" done with task {:?}", &event);
         Ok(())
     }
 
@@ -148,8 +148,8 @@ impl Watcher {
         info!("watcher launched on queue {:?}...", &self.input_queue);
         loop {
             match self.con.brpoplpush(&self.input_queue, &self.taken_queue, 0) {
-                Ok(done) => {
-                    self.handle_input_event(done)?
+                Ok(event) => {
+                    self.handle_input_event(event)?
                 }
                 Err(e) => {
                     error!("BRPOPLPUSH on {:?} failed : {}", &self.input_queue, e);

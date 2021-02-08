@@ -5,7 +5,7 @@ Promise.promisifyAll(redis)
 const inputQueue = "trt/plantA/todo-queue"
 const inputSet = "trt/plantA/todo-set" // set to null if not deduplicating
 const takenQueue = "trt/plantA/taken"
-const outputQueue = "global/done"
+const outputQueue = "global/events"
 
 function print(s){
 	process.stdout.write(s)

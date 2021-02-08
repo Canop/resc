@@ -14,7 +14,7 @@ const REDIS_URL: &str = "redis://127.0.0.1/";
 const INPUT_QUEUE: &str = "trt/plantA/todo-queue";
 const INPUT_SET: &str = "trt/plantA/todo-set";
 const TAKEN_QUEUE: &str = "trt/plantA/taken";
-const OUTPUT_QUEUE: &str = "global/done";
+const OUTPUT_QUEUE: &str = "global/events";
 const WAIT_BETWEEN_DOTS: Duration = Duration::from_secs(1);
 
 fn handle_task(task: &str) {

@@ -15,7 +15,7 @@ public class SimpleWorker {
 	static String inputQueue = "trt/plantA/todo-queue";
 	static String inputSet = "trt/plantA/todo-set"; // set to null if not using a set
 	static String takenQueue = "trt/plantA/taken";
-	static String outputQueue = "global/done";
+	static String outputQueue = "global/events";
 
 	static class Task {
 

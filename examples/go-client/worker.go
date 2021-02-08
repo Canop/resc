@@ -12,7 +12,7 @@ const REDIS_URL = "redis://127.0.0.1"
 const INPUT_QUEUE = "trt/plantA/todo-queue"
 const INPUT_SET = "trt/plantA/todo-set" // set to "" if you don't use a set for deduplicating
 const TAKEN_QUEUE = "trt/plantA/taken"
-const OUTPUT_QUEUE = "global/done"
+const OUTPUT_QUEUE = "global/events"
 
 func handleTask(task string) {
 	tokens := strings.Split(task, "/")
