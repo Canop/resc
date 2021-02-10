@@ -1,4 +1,5 @@
-### next
+<a name="v0.3.0"></a>
+### v0.3.0 - 2021-02-08
 - It's now possible to declare several `make` elements in a rule, which is useful when a "on" condition leads to many different tasks
 - Hjson has been added as an alternate configuration format
 
