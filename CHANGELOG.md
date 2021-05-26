@@ -1,3 +1,7 @@
+<a name="v0.3.1"></a>
+### v0.3.1 - 2021-05-26
+- add support for CRLF in config file
+
 <a name="v0.3.0"></a>
 ### v0.3.0 - 2021-02-08
 - It's now possible to declare several `make` elements in a rule, which is useful when a "on" condition leads to many different tasks
