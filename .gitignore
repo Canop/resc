@@ -9,3 +9,6 @@ examples/go-client/go-client
 examples/java-client/build
 examples/java-client/.gradle
 trav
+build
+releases
+/*.zip
