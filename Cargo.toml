@@ -1,6 +1,6 @@
 [package]
 name = "resc"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Denys Séguret <denys.seguret@fivesgroup.com>"]
 edition = "2018"
 description = "A Redis based task orchestrator"

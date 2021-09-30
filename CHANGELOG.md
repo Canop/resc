@@ -1,3 +1,7 @@
+<a name="v0.3.2"></a>
+### v0.3.2 - 2021-09-30
+- upgrade the redis dependency to fix compilation on some platforms
+
 <a name="v0.3.1"></a>
 ### v0.3.1 - 2021-05-26
 - add support for CRLF in config file
