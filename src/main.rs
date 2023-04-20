@@ -62,8 +62,8 @@ fn main() {
         panic!("no configuration file provided");
     }
     let config_filename = &args[1];
-    info!("configuration read from {}", &config_filename);
-    let conf = match conf::read_file(&config_filename) {
+    info!("configuration read from {}", config_filename);
+    let conf = match conf::read_file(config_filename) {
         Ok(conf) => conf,
         Err(e) => {
             error!("Error reading configuration: {}", &e);

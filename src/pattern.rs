@@ -19,10 +19,10 @@ impl Pattern {
             static ref OUT_GROUP_REGEX: Regex = Regex::new(r"\$\{([\w.]+)\}").unwrap();
         }
         OUT_GROUP_REGEX
-            .replace_all(&*self.src, |caps: &Captures| {
-                match props.get(&*caps.get(1).unwrap().as_str()) {
+            .replace_all(&self.src, |caps: &Captures| {
+                match props.get(caps.get(1).unwrap().as_str()) {
                     Some(value) => value,
-                    None => &*"-missing group!-", // we'll probably panic later on
+                    None => "-missing group!-", // we'll probably panic later on
                 }
             })
             .to_string()

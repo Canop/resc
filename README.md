@@ -269,12 +269,6 @@ When omitted, `taken_queue` is simply `input_queue` with `/taken` added. So here
 
 When `make/task` is omitted, the generated task is the same string as the input task. More precisely, the default value of `make/task` is `"${input_task}"`, `${input_task}` being a variable you can use in your task/queue/set generation.
 
-# Development Status
-
-Resc is developped by [Fives KEODS](https://www.fivesgroup.com/).
-
-This is a preliminary version, without any kind of guarantee and not yet considered industrial grade.
-
 # License
 
 MIT

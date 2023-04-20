@@ -1,7 +1,6 @@
 use {
     crate::*,
     log::*,
-    reqwest,
     serde::Deserialize,
     serde_json::{self, Value},
     std::{collections::HashMap, io::Read},
@@ -45,7 +44,7 @@ impl Fetcher {
     }
 
     pub fn results(&self, props: &HashMap<String, String>) -> Result<Vec<FetchResult>, FetchError> {
-        let url = self.url.inject(&props);
+        let url = self.url.inject(props);
         info!("  querying url: {:#?}", url);
         let mut response = reqwest::get(&url)?;
         if !response.status().is_success() {

@@ -14,6 +14,6 @@ pub struct Ruleset {
 
 impl Ruleset {
     pub fn matching_rules(&self, task: &str) -> Vec<&Rule> {
-        self.rules.iter().filter(|r| r.is_match(&task)).collect()
+        self.rules.iter().filter(|r| r.is_match(task)).collect()
     }
 }

@@ -9,9 +9,10 @@ use {
 
 
 /// Formats usable for reading configuration files
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Debug, Clone, Copy)]
 pub enum SerdeFormat {
     Hjson,
+    #[default]
     Json,
 }
 
@@ -44,10 +45,10 @@ impl SerdeFormat {
     pub fn read_file<T>(path: &Path) -> Result<T, ConfError>
         where T: DeserializeOwned
     {
-        let format = Self::from_path(&path)?;
+        let format = Self::from_path(path)?;
         match format {
             Self::Hjson => {
-                let file_content = fs::read_to_string(&path)?;
+                let file_content = fs::read_to_string(path)?;
                 let conf = deser_hjson::from_str(&file_content);
                 if let Err(e) = &conf {
                     warn!("Error while deserializing conf: {:#?}", e);
@@ -61,8 +62,3 @@ impl SerdeFormat {
     }
 }
 
-impl Default for SerdeFormat {
-    fn default() -> Self {
-        SerdeFormat::Json
-    }
-}

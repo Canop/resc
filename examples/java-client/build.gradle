@@ -14,7 +14,7 @@ compileJava.options.encoding = 'UTF-8'
 targetCompatibility = 11
 sourceCompatibility = 11
 
-mainClassName = "com.keods.resc.examples.SimpleWorker"
+mainClassName = "org.canop.resc.examples.SimpleWorker"
 
 dependencies {
     implementation "redis.clients:jedis:3.2.0"

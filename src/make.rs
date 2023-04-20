@@ -31,9 +31,9 @@ impl Maker {
         results: &mut Vec<RuleResult>,
     ) {
         results.push(RuleResult {
-            task: self.task.inject(&props),
-            queue: self.queue.inject(&props),
-            set: self.set.as_ref().map(|pattern| pattern.inject(&props)),
+            task: self.task.inject(props),
+            queue: self.queue.inject(props),
+            set: self.set.as_ref().map(|pattern| pattern.inject(props)),
         });
     }
 }

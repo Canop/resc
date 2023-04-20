@@ -52,11 +52,9 @@ impl Rule {
         props.insert("input_task".to_owned(), task.to_owned());
         let caps = self.on_regex.captures(task).unwrap();
         let mut results = Vec::new();
-        for groupname in self.on_regex.capture_names() {
-            if let Some(name) = groupname {
-                if let Some(value) = caps.name(name) {
-                    props.insert(name.to_string(), value.as_str().to_string());
-                }
+        for groupname in self.on_regex.capture_names().flatten() {
+            if let Some(value) = caps.name(groupname) {
+                props.insert(groupname.to_string(), value.as_str().to_string());
             }
         }
         if !self.fetchers.is_empty() {

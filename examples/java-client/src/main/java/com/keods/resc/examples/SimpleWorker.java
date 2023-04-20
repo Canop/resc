@@ -1,4 +1,4 @@
-package com.keods.resc.examples;
+package org.canop.resc.examples;
 
 import redis.clients.jedis.Jedis;
 import java.util.concurrent.TimeUnit;
