@@ -1,6 +1,6 @@
 [package]
 name = "resc"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Canop <cano.petrole@gmail.com>"]
 edition = "2018"
 description = "A Redis based task orchestrator"
@@ -10,12 +10,12 @@ license = "MIT"
 [dependencies]
 anyhow = "1.0"
 chrono = "0.4"
-deser-hjson = "0.1.13"
+deser-hjson = "1.1.0"
 env_logger = "0.5.13"
 lazy_static = "1.4"
 log = "0.4"
 redis = "0.21.2"
-regex = "1.5"
+regex = "1.8"
 reqwest = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

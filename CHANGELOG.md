@@ -1,3 +1,7 @@
+<a name="v0.3.4"></a>
+### v0.3.4 - 2023-04-21
+- dependency updates, minor cleaning of code and documentation
+
 <a name="v0.3.2"></a>
 ### v0.3.2 - 2021-09-30
 - upgrade the redis dependency to fix compilation on some platforms
